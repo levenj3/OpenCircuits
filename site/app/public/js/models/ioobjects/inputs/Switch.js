@@ -1,3 +1,7 @@
+if (!IN_BROWSER) {
+    var IOObject = require('../../IOObject');
+}
+
 class Switch extends IOObject {
     constructor(context, x, y) {
         super(context, x, y, 60*images["switchUp.svg"].ratio, 60, images["switchUp.svg"], true, 0, 1, 77*images["switchUp.svg"].ratio, 77);
@@ -21,3 +25,7 @@ class Switch extends IOObject {
 }
 Switch.getXMLName = function() { return "switch"; }
 Importer.types.push(Switch);
+
+if (!IN_BROWSER) {
+    module.exports = Switch;
+}

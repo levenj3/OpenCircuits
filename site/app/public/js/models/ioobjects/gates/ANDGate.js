@@ -39,3 +39,5 @@ class ANDGate extends Gate {
 }
 ANDGate.getXMLName = function() { return "andgate"; }
 Importer.types.push(ANDGate);
+
+module.exports = ANDGate;

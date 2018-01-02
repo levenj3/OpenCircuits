@@ -58,3 +58,5 @@ class LED extends IOObject {
 }
 LED.getXMLName = function() { return "led"; }
 Importer.types.push(LED);
+
+module.exports = LED;

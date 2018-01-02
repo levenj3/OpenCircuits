@@ -568,3 +568,6 @@ function getBrowser() {
       version: M[1]
     };
  }
+
+module.exports.separateGroup = separateGroup;
+module.exports.clamp = clamp;

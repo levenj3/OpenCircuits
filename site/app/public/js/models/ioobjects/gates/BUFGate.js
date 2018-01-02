@@ -18,3 +18,5 @@ class BUFGate extends Gate {
 }
 BUFGate.getXMLName = function() { return "bufgate"; }
 Importer.types.push(BUFGate);
+
+module.exports = BUFGate;
