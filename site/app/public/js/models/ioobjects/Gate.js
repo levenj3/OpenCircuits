@@ -1,3 +1,7 @@
+var DEFAULT_SIZE   = require("../../libraries/Constants").DEFAULT_SIZE;
+
+var IOObject = require("../IOObject");
+
 class Gate extends IOObject {
     constructor(context, not, x, y, img) {
         super(context, x, y, DEFAULT_SIZE*(img != undefined ? img.ratio : 1), DEFAULT_SIZE, img, false, 512, 512);
@@ -52,3 +56,15 @@ class Gate extends IOObject {
         return this;
     }
 }
+
+module.exports = Gate;
+
+// Requirements
+var Images   = require("../../libraries/Images");
+var Importer = require("../../controllers/Importer");
+
+var getIntValue       = require("../../controllers/Importer").getIntValue;
+var getBooleanValue   = require("../../controllers/Importer").getBooleanValue;
+var getChildNode      = require("../../controllers/Importer").getChildNode;
+var createTextElement = require("../../controllers/Exporter").createTextElement;
+// 

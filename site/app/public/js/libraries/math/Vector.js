@@ -69,3 +69,6 @@ class Vector {
         return new Vector(this.x, this.y);
     }
 }
+
+module.exports = Vector;
+module.exports.V = V;

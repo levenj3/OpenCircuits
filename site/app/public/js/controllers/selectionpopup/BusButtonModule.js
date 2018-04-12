@@ -1,10 +1,12 @@
+var Module = require("../../libraries/popup/Module");
+
 class BusButtonModule extends Module {
     constructor(parent, divName) {
         super(parent, divName);
     }
     onShow() {
         var iports = 0, oports = 0;
-        var selections = selectionTool.selections;
+        var selections = SelectionTool.selections;
         for (var i = 0; i < selections.length; i++) {
             if (selections[i] instanceof IPort) {
                 iports++;
@@ -21,7 +23,7 @@ class BusButtonModule extends Module {
         this.createBus();
     }
     createBus() {
-        var selections = selectionTool.selections;
+        var selections = SelectionTool.selections;
         
         var iports = [], oports = [];
         for (var i = 0; i < selections.length; i++) {
@@ -63,3 +65,14 @@ class BusButtonModule extends Module {
         render();
     }
 }
+
+module.exports = BusButtonModule;
+
+// Requirements
+var SelectionTool = require("../tools/SelectionTool");
+var IPort         = require("../../models/IPort");
+var OPort         = require("../../models/OPort");
+var Wire          = require("../../models/Wire");
+
+var render = require("../../views/Renderer").render;
+// 

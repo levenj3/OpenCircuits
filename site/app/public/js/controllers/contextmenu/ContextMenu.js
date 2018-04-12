@@ -1,3 +1,11 @@
+var Popup           = require("../../libraries/popup/Popup");
+var CutModule       = require("./CutModule");
+var CopyModule      = require("./CopyModule");
+var PasteModule     = require("./PasteModule");
+var SelectAllModule = require("./SelectAllModule");
+var UndoModule      = require("./UndoModule");
+var RedoModule      = require("./RedoModule");
+
 class ContextMenu extends Popup {
     constructor() {
         super("context-menu");
@@ -23,3 +31,10 @@ class ContextMenu extends Popup {
         this.setPos(V(pos.x, pos.y));
     }
 }
+var contextmenu = new ContextMenu();
+
+module.exports = contextmenu;
+
+// Requirements
+var Input = require("../Input");
+// 

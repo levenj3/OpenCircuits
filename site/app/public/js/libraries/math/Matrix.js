@@ -1,3 +1,5 @@
+var V = require("./Vector").V;
+
 class Matrix2x3 {
     constructor(other) {
         this.mat = [];
@@ -89,3 +91,5 @@ class Matrix2x3 {
                     "[" + this.mat[1].toFixed(3) + ", " + this.mat[3].toFixed(3) + ", " + this.mat[5].toFixed(3) + "]");
     }
 }
+
+module.exports = Matrix2x3;

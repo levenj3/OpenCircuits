@@ -1,3 +1,5 @@
+var Action = require("./Action");
+
 class PlaceAction extends Action {
     constructor(obj) {
         super();
@@ -10,3 +12,5 @@ class PlaceAction extends Action {
         this.context.addObject(this.obj);
     }
 }
+
+module.exports = PlaceAction;

@@ -1,3 +1,6 @@
+var DEFAULT_SIZE       = require("../libraries/Constants").DEFAULT_SIZE;
+var DEFAULT_FILL_COLOR = require("../libraries/Constants").DEFAULT_FILL_COLOR;
+
 class Wire {
     constructor(context) {
         this.context = context;
@@ -206,13 +209,13 @@ class Wire {
         var inputNode = getChildNode(node, "input");
         var sourceUID = getIntValue(getChildNode(inputNode, "uid"));
         var sourceIndx = getIntValue(getChildNode(inputNode, "index"));
-        var source = findByUID(objects, sourceUID);
+        var source = FindByUID(objects, sourceUID);
         source = (source instanceof WirePort ? source : source.outputs[sourceIndx]);
 
         var connectionNode = getChildNode(node, "connection");
         var targetUID = getIntValue(getChildNode(connectionNode, "uid"));
         var targetIndx = getIntValue(getChildNode(connectionNode, "index"));
-        var target = findByUID(objects, targetUID);
+        var target = FindByUID(objects, targetUID);
         console.log(targetUID);
         console.log(targetIndx);
         console.log(target);
@@ -222,3 +225,23 @@ class Wire {
         this.connect(target);
     }
 }
+
+module.exports = Wire;
+
+// Requirements
+var V           = require("../libraries/math/Vector").V;
+var Transform   = require("../libraries/math/Transform");
+var BezierCurve = require("../libraries/math/Bezier");
+var WirePort    = require("./WirePort");
+
+var FindByUID = require("../libraries/Utils").FindByUID;
+
+var getChildNode      = require("../controllers/Importer").getChildNode;
+var getIntValue       = require("../controllers/Importer").getIntValue;
+var getStringValue    = require("../controllers/Importer").getStringValue;
+var getFloatValue     = require("../controllers/Importer").getFloatValue;
+var getBooleanValue   = require("../controllers/Importer").getBooleanValue;
+
+var createChildNode   = require("../controllers/Exporter").createChildNode;
+var createTextElement = require("../controllers/Exporter").createTextElement;
+// 

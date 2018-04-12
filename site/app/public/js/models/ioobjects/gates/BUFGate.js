@@ -1,6 +1,8 @@
+var Gate = require("../Gate");
+
 class BUFGate extends Gate {
     constructor(context, not, x, y) {
-        super(context, not, x, y, images["buffer.svg"]);
+        super(context, not, x, y, Images["buffer.svg"]);
         this.maxInputs = 1;
 
         this.setInputAmount(1);
@@ -17,6 +19,12 @@ class BUFGate extends Gate {
     }
 }
 BUFGate.getXMLName = function() { return "bufgate"; }
-Importer.types.push(BUFGate);
 
 module.exports = BUFGate;
+
+// Requirements
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+// 
+
+Importer.types.push(BUFGate);

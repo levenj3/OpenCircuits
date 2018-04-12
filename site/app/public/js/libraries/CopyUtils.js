@@ -1,4 +1,4 @@
-function copyGroup(objects) {
+function CopyGroup(objects) {
     if (objects.length === 0)
         return [];
 
@@ -21,7 +21,7 @@ function copyGroup(objects) {
                 var ww = wires[k];
                 while (ww instanceof Wire || ww instanceof WirePort)
                     ww = ww.connection;
-                if (findIPort(objects, ww, copies) == undefined)
+                if (FindIPort(objects, ww, copies) == undefined)
                     break;
 
                 var wire = wires[k].copy();
@@ -37,7 +37,7 @@ function copyGroup(objects) {
                     port.connect(wire);
                     copies.push(port);
                 }
-                var lastConnection = findIPort(objects, w.connection, copies);
+                var lastConnection = FindIPort(objects, w.connection, copies);
                 wire.connect(lastConnection);
                 wireCopies.push(wire);
             }
@@ -56,7 +56,7 @@ function copyGroup(objects) {
     return {objects:copies, wires:wireCopies};
 }
 
-function findIPort(objects, target, copies) {
+function FindIPort(objects, target, copies) {
     for (var i = 0; i < objects.length; i++) {
         var iports = objects[i].inputs;
         for (var j = 0; j < iports.length; j++) {
@@ -66,3 +66,11 @@ function findIPort(objects, target, copies) {
     }
     return undefined;
 }
+
+module.exports.CopyGroup = CopyGroup;
+module.exports.FindIPort = FindIPort;
+
+// Requirements
+var Wire     = require("../models/Wire");
+var WirePort = require("../models/WirePort");
+// 

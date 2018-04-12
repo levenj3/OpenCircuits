@@ -1,3 +1,5 @@
+var Action = require("./Action");
+
 class DeleteAction extends Action {
     constructor(obj, oldinput, oldconnection) {
         super();
@@ -16,3 +18,5 @@ class DeleteAction extends Action {
         this.obj.remove();
     }
 }
+
+module.exports = Action;

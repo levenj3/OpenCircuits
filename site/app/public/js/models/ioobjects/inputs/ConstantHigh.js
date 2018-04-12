@@ -1,6 +1,10 @@
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var IOObject = require("../../IOObject");
+
 class ConstantHigh extends IOObject {
     constructor(context, x, y) {
-        super(context, x, y, DEFAULT_SIZE, DEFAULT_SIZE, images["constHigh.svg"], false, 0, 1);
+        super(context, x, y, DEFAULT_SIZE, DEFAULT_SIZE, Images["constHigh.svg"], false, 0, 1);
         super.activate(true);
     }
     getDisplayName() {
@@ -8,4 +12,12 @@ class ConstantHigh extends IOObject {
     }
 }
 ConstantHigh.getXMLName = function() { return "consthigh"; }
+
+module.exports = ConstantHigh;
+
+// Requirements
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+// 
+
 Importer.types.push(ConstantHigh);

@@ -1,3 +1,10 @@
+var DEFAULT_BORDER_COLOR = require("../libraries/Constants").DEFAULT_BORDER_COLOR;
+var DEFAULT_FILL_COLOR   = require("../libraries/Constants").DEFAULT_FILL_COLOR;
+var IO_PORT_BORDER_WIDTH = require("../libraries/Constants").IO_PORT_BORDER_WIDTH;
+var IO_PORT_LINE_WIDTH   = require("../libraries/Constants").IO_PORT_LINE_WIDTH;
+var IO_PORT_RADIUS       = require("../libraries/Constants").IO_PORT_RADIUS;
+var IO_PORT_LENGTH       = require("../libraries/Constants").IO_PORT_LENGTH;
+
 class IOPort {
     constructor(parent, dir) {
         this.isOn = false;
@@ -52,7 +59,7 @@ class IOPort {
     contains(pos) {
         var transform = new Transform(this.target, V(IO_PORT_RADIUS, IO_PORT_RADIUS).scale(2), 0, this.parent.context.getCamera());
         transform.setParent(this.parent.transform);
-        return circleContains(transform, pos);
+        return CircleContains(transform, pos);
     }
     sContains(pos) {
         if (this.origin.y !== this.target.y)
@@ -62,7 +69,7 @@ class IOPort {
         var pos2 = this.target.add(this.origin).scale(0.5);
         var transform = new Transform(pos2, V(w, IO_PORT_LINE_WIDTH*2), 0, this.parent.context.getCamera());
         transform.setParent(this.parent.transform);
-        return rectContains(transform, pos);
+        return RectContains(transform, pos);
     }
     draw() {
         if (!this.set && this.getArray().length !== this.prevParentLength)
@@ -154,3 +161,17 @@ class IOPort {
         return this;
     }
 }
+
+module.exports = IOPort;
+
+// Requirements
+var V         = require("../libraries/math/Vector").V;
+var Transform = require("../libraries/math/Transform");
+var Importer  = require("../controllers/Importer");
+
+var RectContains      = require("../libraries/Utils").RectContains;
+var CircleContains    = require("../libraries/Utils").CircleContains;
+var getFloatValue     = require("../controllers/Importer").getFloatValue;
+var createChildNode   = require("../controllers/Exporter").createChildNode;
+var createTextElement = require("../controllers/Exporter").createTextElement;
+// 

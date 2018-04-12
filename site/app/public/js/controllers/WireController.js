@@ -6,8 +6,8 @@ var WireController = (function() {
 
     return {
         onMouseDown: function(somethingHappened) {
-            var objects = getCurrentContext().getObjects();
-            var wires = getCurrentContext().getWires();
+            var objects       = getCurrentContext().getObjects();
+            var wires         = getCurrentContext().getWires();
             var worldMousePos = Input.getWorldMousePos();
                         
             // Make sure nothing else has happened
@@ -50,7 +50,7 @@ var WireController = (function() {
                 
             // Begin dragging new wire
             if (pressedPort != undefined) {
-                wiringTool.activate(pressedPort, getCurrentContext());
+                WiringTool.activate(pressedPort, getCurrentContext());
                 pressedPort = undefined;
                 return true;
             }
@@ -60,8 +60,8 @@ var WireController = (function() {
                 pressedWire.split(wireSplitPoint);
                 var action = new SplitWireAction(pressedWire);
                 getCurrentContext().addAction(action);
-                selectionTool.deselectAll();
-                selectionTool.select([pressedWire.connection]);
+                SelectionTool.deselectAll();
+                SelectionTool.select([pressedWire.connection]);
                 TransformController.startDrag(pressedWire.connection, worldMousePos);
                 pressedWire = undefined;
                 return true;
@@ -79,7 +79,7 @@ var WireController = (function() {
 
             // Clicking also begins dragging
             if (pressedPort != undefined) {
-                wiringTool.activate(pressedPort, getCurrentContext());
+                WiringTool.activate(pressedPort, getCurrentContext());
                 pressedPort = undefined;
                 return true;
             }
@@ -87,11 +87,25 @@ var WireController = (function() {
             // Select wire
             if (pressedWire != undefined) {
                 if (!Input.getShiftKeyDown())
-                    selectionTool.deselectAll(true);
-                selectionTool.select([pressedWire], true);
+                    SelectionTool.deselectAll(true);
+                SelectionTool.select([pressedWire], true);
                 pressedWire = undefined;
                 return true;
             }
         }
     };
 })();
+
+module.exports = WireController;
+
+// Requirements
+var V                   = require("../libraries/math/Vector").V;
+var SplitWireAction     = require("../libraries/actions/SplitWireAction");
+var Input               = require("./Input");
+var TransformController = require("./TransformController");
+var SelectionTool       = require("./tools/SelectionTool");
+var WiringTool          = require("./tools/WiringTool");
+var SelectionPopup      = require("./selectionpopup/SelectionPopup");
+
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+// 

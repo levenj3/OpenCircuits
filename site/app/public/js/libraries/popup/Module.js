@@ -38,3 +38,9 @@ class Module {
         this.parent.focused = false;
     }
 }
+
+module.exports = Module;
+
+// Requirements
+var render = require("../../views/Renderer").render;
+//

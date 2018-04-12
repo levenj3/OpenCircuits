@@ -1,3 +1,15 @@
+var DELETE_KEY = require("../../libraries/Constants").DELETE_KEY;
+var ESC_KEY    = require("../../libraries/Constants").ESC_KEY;
+
+var Popup             = require("../../libraries/popup/Popup");
+var TitleModule       = require("./TitleModule");
+var PositionXModule   = require("./PositionXModule");
+var PositionYModule   = require("./PositionYModule");
+var InputCountModule  = require("./InputCountModule");
+var ColorPickerModule = require("./ColorPickerModule");
+var ICButtonModule    = require("./ICButtonModule");
+var BusButtonModule   = require("./BusButtonModule");
+
 class SelectionPopup extends Popup {
     constructor() {
         super("popup");
@@ -16,11 +28,11 @@ class SelectionPopup extends Popup {
     }
     onKeyDown(code) {
         if (code === DELETE_KEY && !this.focused) {
-            RemoveObjects(getCurrentContext(), selectionTool.selections, true);
+            RemoveObjects(getCurrentContext(), SelectionTool.selections, true);
             return;
         }
         if (code === ESC_KEY && !this.hidden) {
-            selectionTool.deselectAll();
+            SelectionTool.deselectAll();
             render();
             return;
         }
@@ -29,7 +41,7 @@ class SelectionPopup extends Popup {
         this.blur();
     }
     update() {
-        var selections = selectionTool.selections;
+        var selections = SelectionTool.selections;
         if (selections.length > 0) {
             this.show();
             this.onMove();
@@ -39,9 +51,9 @@ class SelectionPopup extends Popup {
     }
     onMove() {
         var camera = getCurrentContext().getCamera();
-        if (selectionTool.selections.length > 0) {
-            selectionTool.recalculateMidpoint();
-            var pos = camera.getScreenPos(selectionTool.midpoint);
+        if (SelectionTool.selections.length > 0) {
+            SelectionTool.recalculateMidpoint();
+            var pos = camera.getScreenPos(SelectionTool.midpoint);
             pos.y -= this.div.clientHeight/2;
             this.setPos(pos);
         }
@@ -50,3 +62,13 @@ class SelectionPopup extends Popup {
         this.onMove();
     }
 }
+var selectionpopup = new SelectionPopup();
+
+module.exports = selectionpopup;
+
+// Requirements
+var SelectionTool = require("../tools/SelectionTool");
+
+var RemoveObjects     = require("../../libraries/Utils").RemoveObjects;
+var getCurrentContext = require("../../libraries/Context").getCurrentContext;
+// 

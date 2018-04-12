@@ -1,3 +1,5 @@
+var IOObject = require("../../IOObject");
+
 class SevenSegmentDisplay extends IOObject {
     constructor(context, x, y) {
         super(context, x, y, 100*7/10, 100, undefined, false, 7, 0);
@@ -31,8 +33,8 @@ class SevenSegmentDisplay extends IOObject {
                                  V(-sw/2+sh/2, (-sw+sh)/2),
                                  V(0, 0)];
         this.segmentSizes = [V(sw,sh), V(sh,sw), V(sh, sw), V(sw, sh), V(sh, sw), V(sh, sw), V(sw, sh)];
-        this.segmentImages = [images["segment1.svg"], images["segment2.svg"], images["segment2.svg"], images["segment1.svg"], images["segment2.svg"], images["segment2.svg"], images["segment1.svg"]];
-        this.segmentOnImages = [images["segment3.svg"], images["segment4.svg"], images["segment4.svg"], images["segment3.svg"], images["segment4.svg"], images["segment4.svg"], images["segment3.svg"]];
+        this.segmentImages = [Images["segment1.svg"], Images["segment2.svg"], Images["segment2.svg"], Images["segment1.svg"], Images["segment2.svg"], Images["segment2.svg"], Images["segment1.svg"]];
+        this.segmentOnImages = [Images["segment3.svg"], Images["segment4.svg"], Images["segment4.svg"], Images["segment3.svg"], Images["segment4.svg"], Images["segment4.svg"], Images["segment3.svg"]];
     }
     draw() {
         super.draw();
@@ -60,4 +62,13 @@ class SevenSegmentDisplay extends IOObject {
     }
 }
 SevenSegmentDisplay.getXMLName = function() { return "sevensegmentdisplay"; }
+
+module.exports = SevenSegmentDisplay;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+// 
+
 Importer.types.push(SevenSegmentDisplay);

@@ -1,10 +1,15 @@
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+var IO_PORT_LENGTH = require("../../../libraries/Constants").IO_PORT_LENGTH;
+
+var IOObject = require("../../IOObject");
+
 class ICData {
     constructor(inputs, outputs, components) {
         this.transform = new Transform(V(0,0),V(0,0),0);
         this.inputs = inputs;
         this.outputs = outputs;
         this.components = components;
-        this.wires = getAllWires(this.getObjects());
+        this.wires = GetAllWires(this.getObjects());
 
         this.uidmanager = new UIDManager(this);
 
@@ -61,7 +66,7 @@ class ICData {
             var targ = this.transform.getMatrix().mul(inp.target);
             var orig = this.transform.getMatrix().mul(inp.origin);
             var pos = targ.add(targ.sub(orig).normalize().scale(10000));
-            var p = getNearestPointOnRect(V(-size.x/2, -size.y/2), V(size.x/2, size.y/2), pos);
+            var p = GetNearestPointOnRect(V(-size.x/2, -size.y/2), V(size.x/2, size.y/2), pos);
             var v1 = p.sub(pos).normalize().scale(size.scale(0.5)).add(p);
             var v2 = p.sub(pos).normalize().scale(size.scale(0.5).sub(V(IO_PORT_LENGTH+size.x/2-25, IO_PORT_LENGTH+size.y/2-25))).add(p);
             inp.setOrigin(v1);
@@ -74,7 +79,7 @@ class ICData {
             var targ = this.transform.getMatrix().mul(out.target);
             var orig = this.transform.getMatrix().mul(out.origin);
             var pos = targ.add(targ.sub(orig).normalize().scale(10000));
-            var p = getNearestPointOnRect(V(-size.x/2, -size.y/2), V(size.x/2, size.y/2), pos);
+            var p = GetNearestPointOnRect(V(-size.x/2, -size.y/2), V(size.x/2, size.y/2), pos);
             var v1 = p.sub(pos).normalize().scale(size.scale(0.5)).add(p);
             var v2 = p.sub(pos).normalize().scale(size.scale(0.5).sub(V(IO_PORT_LENGTH+size.x/2-25, IO_PORT_LENGTH+size.y/2-25))).add(p);
             out.setOrigin(v1);
@@ -88,7 +93,7 @@ class ICData {
         return this.outputs.length;
     }
     copy() {
-        return separateGroup(copyGroup(this.getObjects()).objects);
+        return SeparateGroup(CopyGroup(this.getObjects()).objects);
     }
     getUID() {
         return this.icuid;
@@ -107,8 +112,8 @@ class ICData {
     }
 }
 ICData.create = function(objects) {
-    objects = copyGroup(objects).objects;
-    var separate = separateGroup(objects);
+    objects = CopyGroup(objects).objects;
+    var separate = SeparateGroup(objects);
     for (var i = 0; i < separate.inputs.length; i++) {
         var input = separate.inputs[i];
         if (input instanceof Clock && input.getName() === input.getDisplayName())
@@ -131,3 +136,24 @@ ICData.redistributeUIDs = function() {
     }
 }
 ICData.ICs = [];
+
+module.exports = ICData;
+
+// Requirements
+var V         = require("../../../libraries/math/Vector").V;
+var Transform = require("../../../libraries/math/Transform");
+var Importer  = require("../../../controllers/Importer");
+var IPort     = require("../../IPort");
+var OPort     = require("../../OPort");
+// var Clock = require("../inputs/Clock");
+
+var FindIC                = require("../../../libraries/Utils").FindIC;
+var GetAllWires           = require("../../../libraries/Utils").GetAllWires;
+var GetNearestPointOnRect = require("../../../libraries/Utils").GetNearestPointOnRect;
+var SeparateGroup         = require("../../../libraries/Utils").SeparateGroup;
+var CopyGroup             = require("../../../libraries/CopyUtils").CopyGroup;
+var UIDManager            = require("../../../libraries/UIDManager").GetAllWires;
+var createTextElement     = require("../../../controllers/Exporter").createTextElement;
+var getIntValue           = require("../../../controllers/Importer").getIntValue;
+var getChildNode          = require("../../../controllers/Importer").getChildNode;
+// 

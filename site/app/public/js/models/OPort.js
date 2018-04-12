@@ -1,3 +1,5 @@
+var IOPort = require("./IOPort");
+
 class OPort extends IOPort {
     constructor(parent) {
         super(parent, V(1, 0));
@@ -33,3 +35,9 @@ class OPort extends IOPort {
         return "oport";
     }
 }
+
+module.exports = OPort;
+
+// Requirements
+var V = require("../libraries/math/Vector").V;
+// 

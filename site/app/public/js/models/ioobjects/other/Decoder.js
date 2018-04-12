@@ -1,3 +1,7 @@
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var Gate = require("../Gate");
+
 class Decoder extends Gate {
     constructor(context, x, y) {
         super(context, false, x, y, undefined);
@@ -8,7 +12,7 @@ class Decoder extends Gate {
         this.transform.setSize(V(DEFAULT_SIZE, DEFAULT_SIZE/2*(2 << (this.inputs.length-1))));
     }
     setInputAmount(target) {
-        target = clamp(target, 0, 8);
+        target = Clamp(target, 0, 8);
         super.setInputAmount(target);
         super.setOutputAmount(2 << (target-1));
     }
@@ -38,4 +42,14 @@ class Decoder extends Gate {
     }
 }
 Decoder.getXMLName = function() { return "decoder"; }
+
+module.exports = Decoder;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Importer = require("../../../controllers/Importer");
+
+var Clamp = require("../../../libraries/Utils").Clamp;
+// 
+
 Importer.types.push(Decoder);

@@ -1,8 +1,10 @@
+var ITEMNAV_WIDTH = require("../Constants").ITEMNAV_WIDTH;
+
 class Popup {
     constructor(divName) {
         this.div = document.getElementById(divName);
         this.div.addEventListener('keydown', e => {this.onKeyDown(e.keyCode);}, false);
-        this.div.addEventListener('keyup', e => {this.onKeyUp(e.keyCode);}, false);
+        this.div.addEventListener('keyup',   e => {this.onKeyUp  (e.keyCode);}, false);
         this.div.style.position = "absolute";
         this.focused = false;
 
@@ -52,3 +54,10 @@ class Popup {
         this.pos.y = Math.max(Math.min(this.pos.y, window.innerHeight-this.div.clientHeight-1), (header ? header.clientHeight : 0)+5);
     }
 }
+
+module.exports = Popup;
+
+// Requirements
+var V                 = require("../math/Vector").V;
+var ItemNavController = require("../../controllers/ItemNavController");
+// 

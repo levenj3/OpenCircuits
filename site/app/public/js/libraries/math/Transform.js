@@ -1,3 +1,6 @@
+var V         = require("./Vector").V;
+var Matrix2x3 = require("./Matrix");
+
 class Transform {
     constructor(pos, size, angle, camera) {
         this.parent = undefined;
@@ -182,3 +185,5 @@ class Transform {
         return trans;
     }
 }
+
+module.exports = Transform;

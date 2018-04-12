@@ -1,6 +1,10 @@
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var IOObject = require("../../IOObject");
+
 class Keyboard extends IOObject {
     constructor(context, x, y) {
-        super(context, x, y, 3.5*DEFAULT_SIZE, 3.5*DEFAULT_SIZE/images["keyboard.svg"].ratio, images["keyboard.svg"], false, 0, 7);
+        super(context, x, y, 3.5*DEFAULT_SIZE, 3.5*DEFAULT_SIZE/Images["keyboard.svg"].ratio, Images["keyboard.svg"], false, 0, 7);
 
         this.setOutputAmount(7);
         for (var i = 0; i < 7; i++) {
@@ -57,7 +61,6 @@ class Keyboard extends IOObject {
     }
 }
 Keyboard.getXMLName = function() { return "keyboard"; }
-Importer.types.push(Keyboard);
 
 Keyboard.codeMap = [];
 Keyboard.codeCount = 0;
@@ -102,4 +105,12 @@ Keyboard.addKey(40); // Down
 Keyboard.addKey(112); // F1
 Keyboard.addKey(112); // F2
 
-console.log(Keyboard.codeCount);
+module.exports = Keyboard;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+// 
+
+Importer.types.push(Keyboard);

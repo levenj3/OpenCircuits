@@ -1,3 +1,10 @@
+var GRID_SIZE              = require("../libraries/Constants").GRID_SIZE;
+var ROTATION_CIRCLE_R2     = require("../libraries/Utils").ROTATION_CIRCLE_R2;
+var ROTATION_CIRCLE_R1     = require("../libraries/Utils").ROTATION_CIRCLE_R1;
+var ROTATION_CIRCLE_RADIUS = require("../libraries/Constants").ROTATION_CIRCLE_RADIUS;
+
+var V = require("../libraries/math/Vector").V;
+
 var TransformController = (function() {
     var pressedObj = undefined;
     
@@ -25,10 +32,10 @@ var TransformController = (function() {
             }
             obj.setPos(newPos);
         }
-        selectionTool.recalculateMidpoint();
+        SelectionTool.recalculateMidpoint();
     }
     var rotate = function(pos, shift) {
-        var origin = selectionTool.midpoint;
+        var origin = SelectionTool.midpoint;
         var dAngle = Math.atan2(pos.y - origin.y, pos.x - origin.x) - prevAngle;
         for (var i = 0; i < rotateObjects.length; i++) {
             var newAngle = realAngles[i] + dAngle;
@@ -43,10 +50,10 @@ var TransformController = (function() {
     return {
         startDrag: function(obj, worldMousePos) {
             if (!obj.selected) {
-                selectionTool.deselectAll();
-                selectionTool.select([obj]);
+                SelectionTool.deselectAll();
+                SelectionTool.select([obj]);
             }
-            dragObjects = selectionTool.selections;
+            dragObjects = SelectionTool.selections;
             
             startTransforms = [];
             for (var i = 0; i < dragObjects.length; i++) {
@@ -57,7 +64,7 @@ var TransformController = (function() {
             isDragging = true;
             dragPos = worldMousePos.copy().sub(obj.getPos());
             pressedObj = obj;
-            popup.hide();
+            SelectionPopup.hide();
             return true;
         },
         startRotation(objs, pos) {
@@ -71,20 +78,20 @@ var TransformController = (function() {
                 startTransforms[i] = rotateObjects[i].transform.copy();
             }
             isRotating = true;
-            startAngle = Math.atan2(pos.y-selectionTool.midpoint.y, pos.x-selectionTool.midpoint.x);
+            startAngle = Math.atan2(pos.y-SelectionTool.midpoint.y, pos.x-SelectionTool.midpoint.x);
             prevAngle = startAngle;
-            popup.hide();
+            SelectionPopup.hide();
             return true;
         },
         onMouseDown: function() {
-            var objects = getCurrentContext().getObjects();
+            var objects       = getCurrentContext().getObjects();
             var worldMousePos = Input.getWorldMousePos();
 
             // Check if rotation circle was pressed
-            if (!isRotating && selectionTool.selections.length > 0) {
-                var d = worldMousePos.sub(selectionTool.midpoint).len2();
+            if (!isRotating && SelectionTool.selections.length > 0) {
+                var d = worldMousePos.sub(SelectionTool.midpoint).len2();
                 if (d <= ROTATION_CIRCLE_R2 && d >= ROTATION_CIRCLE_R1) {
-                    return this.startRotation(selectionTool.selections, worldMousePos);
+                    return this.startRotation(SelectionTool.selections, worldMousePos);
                 }
             }
             
@@ -100,7 +107,7 @@ var TransformController = (function() {
             }
         },
         onMouseMove: function() {
-            var objects = getCurrentContext().getObjects();
+            var objects       = getCurrentContext().getObjects();
             var worldMousePos = Input.getWorldMousePos();
             
             // Begin dragging
@@ -124,7 +131,7 @@ var TransformController = (function() {
             // Stop dragging
             if (isDragging) {
                 // Add transform action
-                getCurrentContext().addAction(createTransformAction(dragObjects, startTransforms));
+                getCurrentContext().addAction(CreateTransformAction(dragObjects, startTransforms));
                 isDragging = false;
                 return true;
             }
@@ -132,7 +139,7 @@ var TransformController = (function() {
             // Stop rotating
             if (isRotating) {
                 // ADd transform action
-                getCurrentContext().addAction(createTransformAction(rotateObjects, startTransforms));
+                getCurrentContext().addAction(CreateTransformAction(rotateObjects, startTransforms));
                 isRotating = false;
                 return true;
             }
@@ -142,8 +149,8 @@ var TransformController = (function() {
         draw: function(renderer) {
             // Draw rotation circle
             var camera = renderer.getCamera();
-            var pos = camera.getScreenPos(selectionTool.midpoint);
-            var r = ROTATION_CIRCLE_RADIUS / camera.zoom;
+            var pos    = camera.getScreenPos(SelectionTool.midpoint);
+            var r      = ROTATION_CIRCLE_RADIUS / camera.zoom;
             if (isRotating) {
                 renderer.save();
                 renderer.context.fillStyle = '#fff';
@@ -162,3 +169,14 @@ var TransformController = (function() {
         }
     };
 })();
+
+module.exports = TransformController;
+
+// Requirements
+var Input          = require("./Input");
+var SelectionTool  = require("./tools/SelectionTool");
+var SelectionPopup = require("./selectionpopup/SelectionPopup");
+
+var CreateTransformAction = require("../libraries/Utils").CreateTransformAction;
+var getCurrentContext     = require("../libraries/Context").getCurrentContext;
+// 

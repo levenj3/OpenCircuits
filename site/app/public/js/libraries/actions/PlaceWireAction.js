@@ -1,3 +1,5 @@
+var Action = require("./Action");
+
 class PlaceWireAction extends Action {
     constructor(wire) {
         super();
@@ -21,3 +23,5 @@ class PlaceWireAction extends Action {
         this.input.connect(this.wire);
     }
 }
+
+module.exports = PlaceWireAction;

@@ -1,3 +1,7 @@
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var Gate = require("../Gate");
+
 class SRFlipFlop extends Gate {
     constructor(context, x, y) {
         super(context, false, x, y, undefined);
@@ -12,9 +16,8 @@ class SRFlipFlop extends Gate {
         this.transform.setSize(V(DEFAULT_SIZE*1.5, DEFAULT_SIZE*1.5));
     }
     activate(x) {
-        var on = this.outputs[0].isOn;
-
-        var set = this.inputs[0].isOn;
+        var on    = this.outputs[0].isOn;
+        var set   = this.inputs[0].isOn;
         var clock = this.inputs[1].isOn;
         var reset = this.inputs[2].isOn;
         if (clock) {
@@ -38,9 +41,17 @@ class SRFlipFlop extends Gate {
         renderer.rect(0, 0, this.transform.size.x, this.transform.size.y, this.getCol(), this.getBorderColor());
         renderer.restore();
     }
-    getDisplayName() {
-        return "SR Flip Flop";
+    getDisplayName() { 
+        return "SR Flip Flop"; 
     }
 }
 SRFlipFlop.getXMLName = function() { return "srff"; }
+
+module.exports = SRFlipFlop;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Importer = require("../../../controllers/Importer");
+// 
+
 Importer.types.push(SRFlipFlop);

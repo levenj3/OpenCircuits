@@ -1,3 +1,8 @@
+var DEFAULT_SIZE   = require("../../../libraries/Constants").DEFAULT_SIZE;
+var IO_PORT_LENGTH = require("../../../libraries/Constants").IO_PORT_LENGTH;
+
+var Gate = require("../Gate");
+
 class Multiplexer extends Gate {
     constructor(context, x, y) {
         super(context, false, x, y, undefined);
@@ -71,4 +76,12 @@ class Multiplexer extends Gate {
     }
 }
 Multiplexer.getXMLName = function() { return "mux"; }
+
+module.exports = Multiplexer;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Importer = require("../../../controllers/Importer");
+// 
+
 Importer.types.push(Multiplexer);

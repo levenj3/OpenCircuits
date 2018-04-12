@@ -1,3 +1,5 @@
+var Module = require("../../libraries/popup/Module");
+
 class UndoModule extends Module {
     constructor(parent, divName) {
         super(parent, divName);
@@ -10,3 +12,5 @@ class UndoModule extends Module {
         getCurrentContext().designer.history.undo();
     }
 }
+
+module.exports = UndoModule;

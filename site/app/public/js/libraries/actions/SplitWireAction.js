@@ -1,3 +1,5 @@
+var Action = require("./Action");
+
 class SplitWireAction extends Action {
     constructor(wire) {
         super();
@@ -21,3 +23,5 @@ class SplitWireAction extends Action {
         this.newwire.connect(this.connection);
     }
 }
+
+module.exports = SplitWireAction;

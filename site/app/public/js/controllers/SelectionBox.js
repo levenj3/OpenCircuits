@@ -12,18 +12,18 @@ var SelectionBox = (function () {
             for (var i = 0; i < objects.length; i++) {
                 var obj = objects[i];
                 var t = (obj.selectionBoxTransform != undefined ? obj.selectionBoxTransform : obj.transform);
-                if (transformContains(t, trans)) {
+                if (TransformContains(t, trans)) {
                     selections.push(obj);
                 } else if (obj.inputs != undefined && obj.outputs != undefined) {
                     // Check if an iport or oport is selected
                     for (var j = 0; j < obj.inputs.length; j++) {
                         var input = obj.inputs[j];
-                        if (rectContains(trans, input.getPos()))
+                        if (RectContains(trans, input.getPos()))
                             selections.push(input);
                     }
                     for (var j = 0; j < obj.outputs.length; j++) {
                         var output = obj.outputs[j];
-                        if (rectContains(trans, output.getPos()))
+                        if (RectContains(trans, output.getPos()))
                             selections.push(output);
                     }
                 }
@@ -34,12 +34,12 @@ var SelectionBox = (function () {
     
     return {
         onMouseDown: function(somethingHappened) {
-            var objects = getCurrentContext().getObjects();
-            var wires = getCurrentContext().getWires();
+            var objects       = getCurrentContext().getObjects();
+            var wires         = getCurrentContext().getWires();
             var worldMousePos = Input.getWorldMousePos();
             
             // Make sure nothing but blank canvas was clicked
-            if (somethingHappened || !selectionTool.isActive 
+            if (somethingHappened || !SelectionTool.isActive 
                 || Input.getOptionKeyDown())
                 return;
             for (var i = 0; i < objects.length; i++) {
@@ -55,22 +55,22 @@ var SelectionBox = (function () {
             }
             
             pos1 = V(worldMousePos);
-            popup.hide();
+            SelectionPopup.hide();
         },
         onMouseMove: function() {
-            var objects = getCurrentContext().getObjects();
+            var objects       = getCurrentContext().getObjects();
             var worldMousePos = Input.getWorldMousePos();
 
             if (pos1 != undefined) {
                 pos2 = V(worldMousePos);
-                popup.hide();
+                SelectionPopup.hide();
                 return true;
             }
         },
         onMouseUp: function() {
         },
         onClick: function(somethingHappened) {
-            var objects = getCurrentContext().getObjects();
+            var objects       = getCurrentContext().getObjects();
             var worldMousePos = Input.getWorldMousePos();
 
             // Stop selection box
@@ -78,8 +78,8 @@ var SelectionBox = (function () {
                 pos2 = V(worldMousePos);
                 var selections = getSelections();
                 if (!Input.getShiftKeyDown())
-                    selectionTool.deselectAll(true);
-                selectionTool.select(selections, true);
+                    SelectionTool.deselectAll(true);
+                SelectionTool.select(selections, true);
                 pos1 = undefined;
                 pos2 = undefined;
                 return true;
@@ -99,3 +99,18 @@ var SelectionBox = (function () {
         }
     }
 })();
+
+module.exports = SelectionBox;
+
+// Requirements
+var Vector         = require("../libraries/math/Vector");
+var V              = require("../libraries/math/Vector").V;
+var Transform      = require("../libraries/math/Transform");
+var Input          = require("./Input");
+var SelectionTool  = require("./tools/SelectionTool");
+var SelectionPopup = require("./selectionpopup/SelectionPopup");
+
+var RectContains      = require("../libraries/Utils").RectContains;
+var TransformContains = require("../libraries/Utils").TransformContains;
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+// 

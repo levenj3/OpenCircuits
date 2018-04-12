@@ -1,3 +1,7 @@
+var WIRE_DIST_ITERATIONS   = require("../Constants").WIRE_DIST_ITERATIONS;
+var WIRE_NEWTON_ITERATIONS = require("../Constants").WIRE_NEWTON_ITERATIONS;
+var WIRE_DIST_THRESHOLD2   = require("../Utils").WIRE_DIST_THRESHOLD2;
+
 class BezierCurve {
     constructor(p1, p2, c1, c2) {
         this.p1 = V(p1.x,p1.y);
@@ -32,15 +36,15 @@ class BezierCurve {
 
         var discriminant1 = b.y*b.y - 4*a.y*c.y;
         discriminant1 = (discriminant1 >= 0 ? Math.sqrt(discriminant1) : -1);
-        var t1 = (discriminant1 !== -1 ? clamp((-b.y + discriminant1)/(2*a.y),0,1) : 0);
-        var t2 = (discriminant1 !== -1 ? clamp((-b.y - discriminant1)/(2*a.y),0,1) : 0);
+        var t1 = (discriminant1 !== -1 ? Clamp((-b.y + discriminant1)/(2*a.y),0,1) : 0);
+        var t2 = (discriminant1 !== -1 ? Clamp((-b.y - discriminant1)/(2*a.y),0,1) : 0);
         max.y = Math.max(this.getY(t1), this.getY(t2), end1.y, end2.y);
         min.y = Math.min(this.getY(t1), this.getY(t2), end1.y, end2.y);
 
         var discriminant2 = b.x*b.x - 4*a.x*c.x;
         discriminant2 = (discriminant2 >= 0 ? Math.sqrt(discriminant2) : -1);
-        var t3 = (discriminant2 !== -1 ? clamp((-b.x + discriminant2)/(2*a.x),0,1) : 0);
-        var t4 = (discriminant2 !== -1 ? clamp((-b.x - discriminant2)/(2*a.x),0,1) : 0);
+        var t3 = (discriminant2 !== -1 ? Clamp((-b.x + discriminant2)/(2*a.x),0,1) : 0);
+        var t4 = (discriminant2 !== -1 ? Clamp((-b.x - discriminant2)/(2*a.x),0,1) : 0);
         max.x = Math.max(this.getX(t1), this.getX(t2), end1.x, end2.x);
         min.x = Math.min(this.getX(t1), this.getX(t2), end1.x, end2.x);
 
@@ -134,12 +138,12 @@ class BezierCurve {
         }
 
         // Newton's method to find parameter for when slope is undefined AKA denominator function = 0
-        var t1 = findRoots(WIRE_NEWTON_ITERATIONS, t0, mx, my, (t,x,y)=>this.getDistDenominator(t,x,y), (t,x,y)=>this.getDistDenominatorDerivative(t,x,y));
+        var t1 = FindRoots(WIRE_NEWTON_ITERATIONS, t0, mx, my, (t,x,y)=>this.getDistDenominator(t,x,y), (t,x,y)=>this.getDistDenominatorDerivative(t,x,y));
         if (this.getDist2(t1, mx, my) < WIRE_DIST_THRESHOLD2)
             return t1;
 
         // Newton's method to find parameter for when slope is 0 AKA numerator function = 0
-        var t2 = findRoots(WIRE_NEWTON_ITERATIONS, t0, mx, my, (t,x,y)=>this.getDistNumerator(t,x,y), (t,x,y)=>this.getDistNumeratorDerivative(t,x,y));
+        var t2 = FindRoots(WIRE_NEWTON_ITERATIONS, t0, mx, my, (t,x,y)=>this.getDistNumerator(t,x,y), (t,x,y)=>this.getDistNumeratorDerivative(t,x,y));
         if (this.getDist2(t2, mx, my) < WIRE_DIST_THRESHOLD2)
             return t2;
 
@@ -171,3 +175,18 @@ class BezierCurve {
         this.update(p1, p2, c1, c2);
     }
 }
+
+module.exports = BezierCurve;
+
+// Requirements
+var V                 = require("./Vector").V;
+var Transform         = require("./Transform");
+
+var Clamp             = require("../Utils").Clamp;
+var FindRoots         = require("../Utils").FindRoots;
+var getCurrentContext = require("../Context").getCurrentContext;
+var getChildNode      = require("../../controllers/Importer").getChildNode;
+var getFloatValue     = require("../../controllers/Importer").getFloatValue;
+var createChildNode   = require("../../controllers/Exporter").createChildNode;
+var createTextElement = require("../../controllers/Exporter").createTextElement;
+// 

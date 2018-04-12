@@ -89,7 +89,7 @@ class Context {
             return this.designer.getIndexOfObject(o);
     }
     findByUID(uid) {
-        return findObjectByUID(uid) || findWireByUID(uid);
+        return FindObjectByUID(uid) || FindWireByUID(uid);
     }
     findObjectByUID(uid) {
         return UIDManager.find(this.getObjects(), uid);
@@ -99,6 +99,46 @@ class Context {
     }
 }
 
+var CurrentContext;
 function getCurrentContext() {
-    return currentContext;
+    return CurrentContext;
 }
+function setCurrentContext(context) {
+    CurrentContext = context;
+}
+var MainContext;
+function getMainContext() {
+    return MainContext;
+}
+function setMainContext(context) {
+    MainContext = context;
+}
+var Saved = true;
+function setSaved(val) {
+    Saved = val;
+}
+function isSaved() {
+    return Saved;
+}
+function reset() {
+    CurrentContext = MainContext;
+    CurrentContext.reset();
+}
+
+module.exports = Context;
+module.exports.setCurrentContext = setCurrentContext;
+module.exports.getCurrentContext = getCurrentContext;
+module.exports.setMainContext = setMainContext;
+module.exports.getMainContext = getMainContext;
+module.exports.setSaved = setSaved;
+module.exports.isSaved = isSaved;
+module.exports.reset = reset;
+
+// Requirements
+var UIDManager = require("./UIDManager");
+var Wire       = require("../models/Wire");
+
+var CopyArray       = require("./Utils").CopyArray;
+var FindObjectByUID = require("./Utils").FindObjectByUID;
+var FindWireByUID   = require("./Utils").FindWireByUID;
+// 

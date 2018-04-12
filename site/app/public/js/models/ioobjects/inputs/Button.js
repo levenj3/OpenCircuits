@@ -1,23 +1,36 @@
 // key board input inputs
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var IOObject = require("../../IOObject");
 
 class Button extends IOObject {
     constructor(context, x, y) {
-        super(context, x, y, DEFAULT_SIZE, DEFAULT_SIZE, images["buttonUp.svg"], true, 0, 1, 60, 60);
+        super(context, x, y, DEFAULT_SIZE, DEFAULT_SIZE, Images["buttonUp.svg"], true, 0, 1, 60, 60);
     }
     press() {
         super.activate(true);
-        this.img = images["buttonDown.svg"];
+        this.img = Images["buttonDown.svg"];
     }
     release() {
         super.activate(false);
-        this.img = images["buttonUp.svg"];
+        this.img = Images["buttonUp.svg"];
     }
     contains(pos) {
-        return circleContains(this.transform, pos);
+        return CircleContains(this.transform, pos);
     }
     getDisplayName() {
         return "Button";
     }
 }
 Button.getXMLName = function() { return "button"; }
+
+module.exports = Button;
+
+// Requirements
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+
+var CircleContains = require("../../../libraries/Utils").CircleContains;
+// 
+
 Importer.types.push(Button);

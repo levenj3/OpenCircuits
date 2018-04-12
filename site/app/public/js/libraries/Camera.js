@@ -40,7 +40,7 @@ class Camera {
         // getCurrentContext().getRenderer().rect(0, 0, transform.size.x, transform.size.y, '#ff00ff');
         // getCurrentContext().getRenderer().restore();
 
-        return (transformContains(transform, this.getTransform()));
+        return (TransformContains(transform, this.getTransform()));
     }
     getTransform() {
         this.updateMatrix();
@@ -61,3 +61,13 @@ class Camera {
         return this.getMatrix().mul(v.sub(this.center));
     }
 }
+
+module.exports = Camera;
+
+// Requirements
+var V         = require("./math/Vector").V;
+var Matrix2x3 = require("./math/Matrix");
+var Transform = require("./math/Transform");
+
+var TransformContains = require("./Utils").TransformContains;
+// 

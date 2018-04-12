@@ -1,3 +1,8 @@
+var IO_PORT_RADIUS       = require("../libraries/Constants").DEFAULT_BORDER_COLOR;
+var WIRE_SNAP_THRESHOLD       = require("../libraries/Constants").WIRE_SNAP_THRESHOLD;
+
+var IOObject = require("./IOObject");
+
 class WirePort extends IOObject {
     constructor(context) {
         super(context, 0, 0, 2*IO_PORT_RADIUS, 2*IO_PORT_RADIUS);
@@ -64,7 +69,7 @@ class WirePort extends IOObject {
         renderer.circle(v.x, v.y, 7 / camera.zoom, (this.selected ? '#1cff3e' : '#ffffff'), (this.selected ? '#0d7f1f' : '#000000'), 1 / camera.zoom);
     }
     contains(pos) {
-        return circleContains(this.transform, pos);
+        return CircleContains(this.transform, pos);
     }
     sContains(pos) {
         return this.contains(pos);
@@ -105,7 +110,6 @@ class WirePort extends IOObject {
     }
 }
 WirePort.getXMLName = function() { return "port"; }
-Importer.types.push(WirePort);
 
 function snap(wire, x, c) {
     if (Math.abs(x - c) <= WIRE_SNAP_THRESHOLD) {
@@ -114,3 +118,15 @@ function snap(wire, x, c) {
     }
     return x;
 }
+
+module.exports = WirePort;
+
+// Requirements
+var V         = require("../libraries/math/Vector").V;
+var Transform = require("../libraries/math/Transform");
+var Importer  = require("../controllers/Importer");
+
+var CircleContains    = require("../libraries/Utils").CircleContains;
+// 
+
+Importer.types.push(WirePort);

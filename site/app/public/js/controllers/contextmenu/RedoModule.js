@@ -1,3 +1,5 @@
+var Module = require("../../libraries/popup/Module");
+
 class RedoModule extends Module {
     constructor(parent, divName) {
         super(parent, divName);
@@ -10,3 +12,5 @@ class RedoModule extends Module {
         getCurrentContext().designer.history.redo();
     }
 }
+
+module.exports = RedoModule;

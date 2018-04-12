@@ -1,3 +1,5 @@
+var Action = require("./Action");
+
 class TransformAction extends Action {
     constructor(obj, t0, t1) {
         super();
@@ -15,8 +17,15 @@ class TransformAction extends Action {
     }
     updatePopup() {
         if (this.obj.selected) {
-            selectionTool.recalculateMidpoint();
-            popup.onMove();
+            SelectionTool.recalculateMidpoint();
+            SelectionPopup.onMove();
         }
     }
 }
+
+module.exports = TransformAction;
+
+// Requirements
+var SelectionTool  = require("../../controllers/tools/SelectionTool");
+var SelectionPopup = require("../../controllers/selectionpopup/SelectionPopup");
+// 

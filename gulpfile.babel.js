@@ -2,7 +2,8 @@ var gulp = require('gulp');
 var uglify = require('gulp-uglify-es').default; 
 var concat = require('gulp-concat');
 var gap = require('gulp-append-prepend');
-var mocha = require('gulp-mocha');
+var browserify = require('browserify');
+// var mocha = require('gulp-mocha');
 
 var dest = "site/app/public/js/combined.js";
 var dest_min = "site/app/public/js/combined-min.js";
@@ -17,9 +18,10 @@ var paths = files.map(function(file) { return "site/app/public/js/" + file + ".j
 var test_paths = files.map(function(file) { return "tests/app/public/js/" + file + ".js"; });
 
 function build() {
+    console.log(browserify);
+    
     gulp.src(paths)
       .pipe(concat(dest))
-      .pipe(gap.prependText("/* Built at: " + (new Date()).toString() + " */\n"))
       .pipe(gap.prependText("var __TESTING__ = false;\n\n"))
       .pipe(gulp.dest("."))
       .pipe(uglify())
@@ -28,8 +30,6 @@ function build() {
       
     gulp.src(paths.concat(test_paths))
       .pipe(concat("tests/index.js"))
-      .pipe(gap.prependFile("tests/prepend.js"))
-      .pipe(gap.prependText("/* Built at: " + (new Date()).toString() + " */\n"))
       .pipe(gap.appendText("start();"))
       .pipe(gulp.dest("."));
 }

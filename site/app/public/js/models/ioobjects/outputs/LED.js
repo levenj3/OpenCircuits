@@ -1,6 +1,10 @@
+var DEFAULT_SIZE   = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var IOObject = require("../../IOObject");
+
 class LED extends IOObject {
     constructor(context, x, y, color) {
-        super(context, x, y, DEFAULT_SIZE, DEFAULT_SIZE, images["led.svg"], false, 1, 0);
+        super(context, x, y, DEFAULT_SIZE, DEFAULT_SIZE, Images["led.svg"], false, 1, 0);
         this.transform.setPos(V(this.transform.pos.x, this.transform.pos.y - 2*this.transform.size.y));
         this.color = (color == undefined) ? ("#ffffff") : (color);
         this.connectorWidth = 5;
@@ -32,7 +36,7 @@ class LED extends IOObject {
 
         this.localSpace();
         if (this.isOn)
-            renderer.image(images["ledLight.svg"], 0, 0, 3*this.transform.size.x, 3*this.transform.size.y, this.color);
+            renderer.image(Images["ledLight.svg"], 0, 0, 3*this.transform.size.x, 3*this.transform.size.y, this.color);
         renderer.restore();
     }
     getDisplayName() {
@@ -57,6 +61,17 @@ class LED extends IOObject {
     }
 }
 LED.getXMLName = function() { return "led"; }
-Importer.types.push(LED);
 
 module.exports = LED;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+
+var getStringValue    = require("../../../controllers/Importer").getStringValue;
+var getChildNode      = require("../../../controllers/Importer").getChildNode;
+var createTextElement = require("../../../controllers/Exporter").createTextElement;
+// 
+
+Importer.types.push(LED);

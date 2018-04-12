@@ -1,6 +1,8 @@
+var Gate = require("../Gate");
+
 class ANDGate extends Gate {
     constructor(context, not, x, y) {
-        super(context, not, x, y, images["and.svg"]);
+        super(context, not, x, y, Images["and.svg"]);
     }
     setInputAmount(target) {
         super.setInputAmount(target);
@@ -38,6 +40,13 @@ class ANDGate extends Gate {
     }
 }
 ANDGate.getXMLName = function() { return "andgate"; }
-Importer.types.push(ANDGate);
 
 module.exports = ANDGate;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+// 
+
+Importer.types.push(ANDGate);

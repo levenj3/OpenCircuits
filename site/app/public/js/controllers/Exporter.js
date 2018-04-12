@@ -1,5 +1,7 @@
 var Exporter = (function() {    
+    var saveButton       = document.getElementById('save-button');
     var projectNameInput = document.getElementById("project-name");
+    saveButton.onclick = () => { Exporter.saveFile(); };
 
     return {
         ROOT: undefined,
@@ -33,7 +35,7 @@ var Exporter = (function() {
             this.ROOT = root;
 
             var objects = context.getObjects();
-            var wires = context.getWires();
+            var wires   = context.getWires();
 
             var projectNode = getChildNode(root, "project");
 
@@ -72,7 +74,7 @@ var Exporter = (function() {
 
                 var componentsNode = createChildNode(ICNode, "components");
                 var objects = ic.inputs.concat(ic.components, ic.outputs);
-                var wires = getAllWires(objects);
+                var wires = GetAllWires(objects);
                 this.writeGroup(componentsNode, objects, wires);
             }
         }
@@ -92,3 +94,12 @@ function createTextElement(node, tag, text) {
     a.appendChild(b);
     node.appendChild(a);
 }
+
+module.exports = Exporter;
+module.exports.createChildNode = createChildNode;
+module.exports.createTextElement = createTextElement;
+
+// Requirements
+var ICData      = require("../models/ioobjects/other/ICData");
+var GetAllWires = require("../libraries/Utils").GetAllWires;
+// 

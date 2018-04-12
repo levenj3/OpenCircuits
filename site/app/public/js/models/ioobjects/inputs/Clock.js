@@ -1,6 +1,8 @@
+var IOObject = require("../../IOObject");
+
 class Clock extends IOObject {
     constructor(context, x, y) {
-        super(context, x, y, 60, 60/images["clock.svg"].ratio, images["clock.svg"], false, 0, 1);
+        super(context, x, y, 60, 60/Images["clock.svg"].ratio, Images["clock.svg"], false, 0, 1);
         this.frequency = 1000;
         setTimeout(() => this.tick(), this.frequency);
     }
@@ -10,7 +12,7 @@ class Clock extends IOObject {
     }
     activate(on) {
         super.activate(on);
-        this.img = (on ? images["clockOn.svg"] : images["clock.svg"]);
+        this.img = (on ? Images["clockOn.svg"] : Images["clock.svg"]);
         render();
     }
     getDisplayName() {
@@ -18,4 +20,12 @@ class Clock extends IOObject {
     }
 }
 Clock.getXMLName = function() { return "clock"; }
+
+module.exports = Clock;
+
+// Requirements
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+// 
+
 Importer.types.push(Clock);

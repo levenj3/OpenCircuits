@@ -1,3 +1,5 @@
+var Module = require("../../libraries/popup/Module");
+
 class PasteModule extends Module {
     constructor(parent, divName) {
         super(parent, divName);
@@ -10,3 +12,5 @@ class PasteModule extends Module {
         document.execCommand("copy");
     }
 }
+
+module.exports = PasteModule;

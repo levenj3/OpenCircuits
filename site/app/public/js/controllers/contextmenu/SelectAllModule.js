@@ -1,3 +1,8 @@
+var Module        = require("../../libraries/popup/Module");
+var SelectionTool = require("../tools/SelectionTool");
+
+var render = require("../../views/Renderer").render;
+
 class SelectAllModule extends Module {
     constructor(parent, divName) {
         super(parent, divName);
@@ -7,7 +12,9 @@ class SelectAllModule extends Module {
     }
     onClick() {
         this.parent.hide();
-        selectionTool.selectAll();
+        SelectionTool.selectAll();
         render();
     }
 }
+
+module.exports = SelectAllModule;

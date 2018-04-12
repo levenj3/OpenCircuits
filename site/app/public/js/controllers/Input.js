@@ -1,7 +1,18 @@
+var LEFT_MOUSE_BUTTON = require("../libraries/Constants").LEFT_MOUSE_BUTTON;
+var SHIFT_KEY         = require("../libraries/Constants").SHIFT_KEY;
+var CONTROL_KEY       = require("../libraries/Constants").CONTROL_KEY;
+var COMMAND_KEY       = require("../libraries/Constants").COMMAND_KEY;
+var OPTION_KEY        = require("../libraries/Constants").OPTION_KEY;
+var ENTER_KEY         = require("../libraries/Constants").ENTER_KEY;
+var Browser           = require("../libraries/Utils").GetBrowser();
+
+var Vector              = require("../libraries/math/Vector");
+var V                   = require("../libraries/math/Vector").V;
+
 var Input = (function () {
-    var rawMousePos = new Vector(0, 0);
-    var mousePos = new Vector(0,0);
-    var prevMousePos = new Vector(0,0);
+    var rawMousePos   = new Vector(0,0);
+    var mousePos      = new Vector(0,0);
+    var prevMousePos  = new Vector(0,0);
     var worldMousePos = new Vector(0,0);
 
     var mouseDown = false;
@@ -50,7 +61,7 @@ var Input = (function () {
         }
 
         getCurrentContext().getHistoryManager().onKeyDown(code);
-        if (CurrentTool.onKeyDown(code))
+        if (getCurrentTool().onKeyDown(code))
             render();
     }
     var onKeyUp = function(e) {
@@ -76,7 +87,7 @@ var Input = (function () {
                 objects[i].onKeyUp(code);
         }
 
-        if (CurrentTool.onKeyUp(code))
+        if (getCurrentTool().onKeyUp(code))
             render();
     }
     var onDoubleClick = function(e) {
@@ -97,7 +108,7 @@ var Input = (function () {
 
         camera.translate(-dx, -dy);
 
-        popup.onWheel();
+        SelectionPopup.onWheel();
 
         render();
     }
@@ -111,8 +122,8 @@ var Input = (function () {
 
         if (e.button === LEFT_MOUSE_BUTTON) {
             var shouldRender = false;
-            contextmenu.hide();
-            shouldRender = CurrentTool.onMouseDown(shouldRender);
+            ContextMenu.hide();
+            shouldRender = getCurrentTool().onMouseDown(shouldRender);
             for (var i = 0; i < mouseListeners.length; i++)
                 shouldRender = mouseListeners[i].onMouseDown(shouldRender) || shouldRender;
             if (shouldRender)
@@ -127,8 +138,8 @@ var Input = (function () {
         prevMousePos.x = mousePos.x;
         prevMousePos.y = mousePos.y;
 
-        rawMousePos = new Vector(e.clientX, e.clientY);
-        mousePos = new Vector(e.clientX - rect.left, e.clientY - rect.top);
+        rawMousePos   = new Vector(e.clientX, e.clientY);
+        mousePos      = new Vector(e.clientX - rect.left, e.clientY - rect.top);
         worldMousePos = camera.getWorldPos(mousePos);
 
         isDragging = (mouseDown && (Date.now() - startTapTime > 50));
@@ -141,11 +152,11 @@ var Input = (function () {
             camera.translate(camera.zoom * dPos.x, camera.zoom * dPos.y);
             mouseDownPos = mousePos;
 
-            popup.onMove();
+            SelectionPopup.onMove();
             shouldRender = true;
         }
 
-        shouldRender = CurrentTool.onMouseMove(shouldRender) || shouldRender;
+        shouldRender = getCurrentTool().onMouseMove(shouldRender) || shouldRender;
         for (var i = 0; i < mouseListeners.length; i++)
             shouldRender = mouseListeners[i].onMouseMove(shouldRender) || shouldRender;
         if (shouldRender)
@@ -155,7 +166,7 @@ var Input = (function () {
         mouseDown = false;
 
         var shouldRender = false;
-        shouldRender = CurrentTool.onMouseUp(shouldRender);
+        shouldRender = getCurrentTool().onMouseUp(shouldRender);
         for (var i = 0; i < mouseListeners.length; i++)
             shouldRender = mouseListeners[i].onMouseUp(shouldRender) || shouldRender;
         if (shouldRender)
@@ -163,7 +174,7 @@ var Input = (function () {
     }
     var onClick = function(e) {
         var shouldRender = false;
-        shouldRender = CurrentTool.onClick(shouldRender);
+        shouldRender = getCurrentTool().onClick(shouldRender);
         for (var i = 0; i < mouseListeners.length; i++)
             shouldRender = mouseListeners[i].onClick(shouldRender) || shouldRender;
         if (shouldRender)
@@ -176,20 +187,20 @@ var Input = (function () {
     return {
         registerContext: function(ctx) {
             var canvas = ctx.getRenderer().canvas;
-            canvas.addEventListener('click', e => onClick(e), false);
-            canvas.addEventListener('dblclick', e => onDoubleClick(e), false);
+            canvas.addEventListener('click',      e => onClick(e), false);
+            canvas.addEventListener('dblclick',   e => onDoubleClick(e), false);
             // if (browser.name !== "Firefox")
-                canvas.addEventListener('wheel', e => onWheel(e), false);
+                canvas.addEventListener('wheel',  e => onWheel(e), false);
             // else
             //     canvas.addEventListener('DOMMouseScroll', e => onWheel(e), false);
-            canvas.addEventListener('mousedown', e => onMouseDown(e), false);
-            canvas.addEventListener('mouseup', e => onMouseUp(e), false);
-            canvas.addEventListener('mousemove', e => onMouseMove(e), false);
+            canvas.addEventListener('mousedown',  e => onMouseDown(e), false);
+            canvas.addEventListener('mouseup',    e => onMouseUp(e), false);
+            canvas.addEventListener('mousemove',  e => onMouseMove(e), false);
             canvas.addEventListener('mouseenter', e => { if (PlaceItemController.drag) { onMouseMove(e); onClick(e); PlaceItemController.drag = false; }}, false);
             canvas.addEventListener("mouseleave", e => { if (mouseDown) { onMouseUp(e); onClick(e); } });
 
             canvas.addEventListener("contextmenu", function(e) {
-                contextmenu.show(e);
+                ContextMenu.show(e);
                 e.preventDefault();
             });
         },
@@ -211,8 +222,20 @@ var Input = (function () {
         getOptionKeyDown() {
             return optionKeyDown;
         },
-        getIsDragging() {
+        isDragging() {
             return isDragging;
         }
     }
 })();
+module.exports = Input;
+
+// Requirements
+var Keyboard            = require("../models/ioobjects/inputs/Keyboard");
+var ContextMenu         = require("./contextmenu/ContextMenu");
+var SelectionPopup      = require("./selectionpopup/SelectionPopup");
+var PlaceItemController = require("./PlaceItemController");
+
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+var getCurrentTool    = require("./tools/Tool").getCurrent;
+var render            = require("../views/Renderer").render;
+//

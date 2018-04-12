@@ -1,17 +1,20 @@
+// var Utils           = require("../libraries/Utils")
+var Images              = require("../libraries/Images");
+var Context             = require("../libraries/Context");
+// var ICDesigner          = require("../controllers/ICDesigner");
+// var SelectionPopup      = require("../controllers/selectionpopup/SelectionPopup");
+// var ContextMenu         = require("../controllers/contextmenu/ContextMenu");
+// var SelectionTool       = require("../controllers/tools/SelectionTool");
+// var Input               = require("../controllers/Input");
+// var TransformController = require("../controllers/TransformController");
+// var WireController      = require("../controllers/WireController");
+// var SelectionBox        = require("../controllers/SelectionBox");
+// var IOObject            = require("../models/IOObject");
+// var CircuitDesigner     = require("./CircuitDesigner");
+// 
+// var render = require("./Renderer").render;
 
-var images = [];
-
-var popup;
-var contextmenu;
-var icdesigner;
-
-var context;
-
-var currentContext;
-
-var browser = getBrowser();
-
-var saved = true;
+// var Popup;
 
 // Prompt for exit
 // window.onbeforeunload = function(e) {
@@ -22,83 +25,42 @@ var saved = true;
 //     }
 // };
 
-function start() {
+function Start() {
     var designer = new CircuitDesigner(document.getElementById("canvas"));
-    context = new Context(designer);
-    currentContext = context;
+    // MainContext = new Context(designer);
+    // CurrentContext = Context;
+    Context.setMainContext(new Context(designer));
+    Context.setCurrentContext(Context.getMainContext());
 
-    popup = new SelectionPopup();
-    icdesigner = new ICDesigner();
-    contextmenu = new ContextMenu();
+    // popup = new SelectionPopup();
+    // icdesigner = new ICDesigner();
+    // contextmenu = new ContextMenu();
     
-    Input.registerContext(context);
-    Input.registerContext(icdesigner.context);
+    Input.registerContext(Context.getMainContext());
+    Input.registerContext(ICDesigner.context);
+    
     Input.addMouseListener(TransformController);
     Input.addMouseListener(WireController);
     Input.addMouseListener(SelectionBox);
     
-    Input.addMouseListener(icdesigner);
+    Input.addMouseListener(ICDesigner);
     
-    selectionTool.activate();
+    SelectionTool.activate();
 
-    loadImage(images,
-        ["constLow.svg", "constHigh.svg",
-         "buttonUp.svg", "buttonDown.svg",
-         "switchUp.svg", "switchDown.svg",
-         "led.svg", "ledLight.svg",
-         "buffer.svg", "and.svg",
-         "or.svg", "xor.svg",
-         "segment1.svg", "segment2.svg",
-         "segment3.svg", "segment4.svg",
-         "clock.svg", "clockOn.svg",
-         "keyboard.svg", "base.svg"], 0, onFinishLoading);
+    Images.load(["constLow.svg", "constHigh.svg",
+                 "buttonUp.svg", "buttonDown.svg",
+                 "switchUp.svg", "switchDown.svg",
+                 "led.svg"     , "ledLight.svg",
+                 "buffer.svg"  , "and.svg",
+                 "or.svg"      , "xor.svg",
+                 "segment1.svg", "segment2.svg",
+                 "segment3.svg", "segment4.svg",
+                 "clock.svg"   , "clockOn.svg",
+                 "keyboard.svg", "base.svg"], 0, OnFinishLoading);
 }
 
-function wire(source, target) {
-    var wire = new Wire(getCurrentContext(), source);
-    source.connect(wire);
-    wire.connect(target);
-}
-
-function reset() {
-    UID_COUNTER = 0;
-    ICs = [];
-    currentContext = context;
-    context.reset();
-}
-
-function onFinishLoading() {
+function OnFinishLoading() {
     render();
 }
 
-var renderQueue = 0;
-
-function render() {
-    if (__TESTING__) // Never render while unit testing
-        return;
-        
-    if (renderQueue === 0)
-        requestAnimationFrame(actualRender);
-    renderQueue++;
-}
-
-function actualRender() {
-    // console.log("Saved : " + (renderQueue - 1) + " render calls!");
-    renderQueue = 0;
-    getCurrentContext().render();
-}
-
-function loadImage(imgs, imageNames, index, onFinish) {
-    var img = new Image();
-    img.onload = function() {
-        imgs[imageNames[index]] = img;
-        img.dx = 0;
-        img.dy = 0;
-        img.ratio = img.width / img.height;
-        if (index === imageNames.length-1)
-            onFinish(imgs);
-        else
-            loadImage(imgs, imageNames, index+1, onFinish);
-    };
-    img.src = "img/items/" + imageNames[index];
-}
+// document.body.onload = Start;

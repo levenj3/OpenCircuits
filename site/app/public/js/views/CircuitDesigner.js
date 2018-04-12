@@ -1,3 +1,6 @@
+var PROPAGATION_TIME = require("../libraries/Constants").PROPAGATION_TIME;
+var GRID_SIZE        = require("../libraries/Constants").GRID_SIZE;
+
 class CircuitDesigner {
     constructor(canvas, vw, vh) {
         this.renderer = new Renderer(this, canvas, vw, vh);
@@ -7,7 +10,8 @@ class CircuitDesigner {
         this.wires = [];
         this.objects = [];
 
-        this.propogationQueue = [];
+        this.updateRequests = 0;
+        this.propagationQueue = [];
 
         window.addEventListener('resize', e => this.resize(), false);
 
@@ -20,23 +24,23 @@ class CircuitDesigner {
             this.wires[i].remove();
         this.objects = [];
         this.wires = [];
-        this.propogationQueue = [];
+        this.propagationQueue = [];
     }
     propogate(sender, receiver, signal) {
-        this.propogationQueue.push(new Propogation(sender, receiver, signal, () => this.update(sender, receiver)));//() => this.update()));
+        this.propagationQueue.push(new Propagation(this, sender, receiver, signal, () => this.update(sender, receiver)));//() => this.update()));
     }
     update(sender, receiver) {
         var tempQueue = [];
-        while (this.propogationQueue.length > 0)
-            tempQueue.push(this.propogationQueue.pop());
+        while (this.propagationQueue.length > 0)
+            tempQueue.push(this.propagationQueue.pop());
 
         while (tempQueue.length > 0)
             tempQueue.pop().send();
 
-        if (this.propogationQueue.length > 0)
-            updateRequests++;
+        if (this.propagationQueue.length > 0)
+            this.updateRequests++;
 
-        updateRequests--;
+        this.updateRequests--;
 
         console.log("update");
 
@@ -56,8 +60,8 @@ class CircuitDesigner {
         if (inScene)
             render();
 
-        if (updateRequests > 0) {
-            setTimeout(() => this.update(sender, receiver), PROPOGATION_TIME);
+        if (this.updateRequests > 0) {
+            setTimeout(() => this.update(sender, receiver), PROPAGATION_TIME);
         }
     }
     render() {
@@ -98,7 +102,7 @@ class CircuitDesigner {
                 this.objects[i].draw();
         }
 
-        CurrentTool.draw(this.renderer);
+        getCurrentTool().draw(this.renderer);
     }
     resize() {
         this.renderer.resize();
@@ -142,3 +146,17 @@ class CircuitDesigner {
         return -1;
     }
 }
+
+module.exports = CircuitDesigner;
+
+// Requirements
+var V              = require("../libraries/math/Vector").V;
+var Camera         = require("../libraries/Camera");
+var HistoryManager = require("../libraries/HistoryManager");
+var Propagation    = require("../libraries/Propagation");
+var Wire           = require("../models/Wire");
+var Renderer       = require("./Renderer");
+
+var render         = require("./Renderer").render;
+var getCurrentTool = require("../controllers/tools/Tool").getCurrent;
+// 

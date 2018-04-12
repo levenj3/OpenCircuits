@@ -1,3 +1,5 @@
+var Browser = require("../libraries/Utils").GetBrowser();
+
 class Renderer {
     constructor(parent, canvas, vw, vh) {
         this.parent = parent;
@@ -72,7 +74,7 @@ class Renderer {
         this.tintContext.clearRect(0, 0, this.tintCanvas.width, this.tintCanvas.height);
         this.tintContext.fillStyle = tint;
         this.tintContext.fillRect(0, 0, this.tintCanvas.width, this.tintCanvas.height);
-        if (browser.name !== "Firefox")
+        if (Browser.name !== "Firefox")
             this.tintContext.globalCompositeOperation = "destination-atop";
         else
             this.tintContext.globalCompositeOperation = "source-atop";
@@ -166,3 +168,27 @@ class Renderer {
             this.context.lineWidth = borderSize;
     }
 }
+
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+
+var render = (function() {
+    var renderQueue = 0;
+    return {
+        render: function() {
+            // if (__TESTING__) // Never render while unit testing
+            //     return;
+                
+            if (renderQueue === 0) {
+                requestAnimationFrame(function() {
+                    renderQueue = 0;
+                    getCurrentContext().render();
+                });
+            }
+            
+            renderQueue++;
+        }
+    }
+})();
+
+module.exports = Renderer;
+module.exports.render = render.render;

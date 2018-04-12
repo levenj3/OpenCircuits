@@ -1,3 +1,7 @@
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var IOObject = require("../../IOObject");
+
 class IC extends IOObject {
     constructor(context, data, x, y) {
         super(context, x, y, 50, 50, undefined, false, 999, 999);
@@ -71,8 +75,8 @@ class IC extends IOObject {
             var ww = renderer.getTextWidth(name)/2;
             var pos = getNearestPointOnRect(V(-size.x/2, -size.y/2), V(size.x/2, size.y/2), pos1);
             pos = pos.sub(pos1).normalize().scale(padding).add(pos);
-            pos.x = clamp(pos.x, -size.x/2+padding+ww, size.x/2-padding-ww);
-            pos.y = clamp(pos.y, -size.y/2+14, size.y/2-14);
+            pos.x = Clamp(pos.x, -size.x/2+padding+ww, size.x/2-padding-ww);
+            pos.y = Clamp(pos.y, -size.y/2+14, size.y/2-14);
             renderer.text(name, pos.x, pos.y, 0, 0, align);
         }
         for (var i = 0; i < this.outputs.length; i++) {
@@ -83,8 +87,8 @@ class IC extends IOObject {
             var ww = renderer.getTextWidth(name)/2;
             var pos = getNearestPointOnRect(V(-size.x/2, -size.y/2), V(size.x/2, size.y/2), pos1);
             pos = pos.sub(pos1).normalize().scale(padding).add(pos);
-            pos.x = clamp(pos.x, -size.x/2+padding+ww, size.x/2-padding-ww);
-            pos.y = clamp(pos.y, -size.y/2+14, size.y/2-14);
+            pos.x = Clamp(pos.x, -size.x/2+padding+ww, size.x/2-padding-ww);
+            pos.y = Clamp(pos.y, -size.y/2+14, size.y/2-14);
             renderer.text(name, pos.x, pos.y, 0, 0, align);
         }
 
@@ -104,11 +108,24 @@ class IC extends IOObject {
     load(node, ics) {
         super.load(node);
         var icuid = getIntValue(getChildNode(node, "icuid"));
-        var data = findIC(icuid, ics);
+        var data = FindIC(icuid, ics);
         this.data = data;
         this.setup();
         return this;
     }
 }
 IC.getXMLName = function() { return "ic"; }
+
+module.exports = IC;
+
+// Requirements
+var Importer = require("../../../controllers/Importer");
+
+var Clamp             = require("../../../libraries/Utils").Clamp;
+var FindIC            = require("../../../libraries/Utils").FindIC;
+var createTextElement = require("../../../controllers/Exporter").createTextElement;
+var getIntValue       = require("../../../controllers/Importer").getIntValue;
+var getChildNode      = require("../../../controllers/Importer").getChildNode;
+// 
+
 Importer.types.push(IC);

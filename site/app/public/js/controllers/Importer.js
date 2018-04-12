@@ -1,5 +1,6 @@
 var Importer = (function() {   
     var fileInput = document.getElementById('file-input');
+    fileInput.onchange = () => { Importer.openFile(); };
      
     return {
         types: [],
@@ -12,7 +13,7 @@ var Importer = (function() {
 
                 var reader = new FileReader();
 
-                reader.onload = function(e) {
+                reader.onload = (e) => {
                     this.load(reader.result, getCurrentContext());
                     render();
                 }
@@ -48,7 +49,7 @@ var Importer = (function() {
         },
         loadGroup: function(node, context, ics) {
             var objectsNode = getChildNode(node, "objects");
-            var wiresNode = getChildNode(node, "wires");
+            var wiresNode   = getChildNode(node, "wires");
 
             var objects = [];
             var wires = [];
@@ -74,8 +75,8 @@ var Importer = (function() {
             var icNodes = getChildrenByTagName(node, "ic");
             for (var i = 0; i < icNodes.length; i++) {
                 var icNode = icNodes[i];
-                var icuid = getIntValue(getChildNode(icNode, "icuid"));
-                var width = getIntValue(getChildNode(icNode, "width"));
+                var icuid  = getIntValue(getChildNode(icNode, "icuid"));
+                var width  = getIntValue(getChildNode(icNode, "width"));
                 var height = getIntValue(getChildNode(icNode, "height"));
 
                 var componentsNode = getChildNode(icNode, "components");
@@ -136,3 +137,21 @@ function getStringValue(node, def) {
         return def;
     return node.childNodes[0].nodeValue;
 }
+
+module.exports = Importer;
+module.exports.getChildNode = getChildNode;
+module.exports.getChildrenByTagName = getChildrenByTagName;
+module.exports.getBooleanValue = getBooleanValue;
+module.exports.getIntValue = getIntValue;
+module.exports.getFloatValue = getIntValue;
+module.exports.getStringValue = getIntValue;
+
+// Requirements
+var ICData = require("../models/ioobjects/other/ICData");
+var Wire   = require("../models/Wire");
+var IPort  = require("../models/IPort");
+
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+var reset             = require("../libraries/Context").reset;
+var render            = require("../views/Renderer").render;
+//

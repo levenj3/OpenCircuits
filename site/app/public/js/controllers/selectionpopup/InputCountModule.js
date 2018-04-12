@@ -1,3 +1,5 @@
+var Module = require("../../libraries/popup/Module");
+
 class InputCountModule extends Module {
     constructor(parent, divName, divTextName) {
         super(parent, divName, divTextName);
@@ -6,7 +8,7 @@ class InputCountModule extends Module {
         var allSame = true, display = true;
         var maxMinValue = 0;
         var minMaxValue = 999;
-        var selections = selectionTool.selections;
+        var selections = SelectionTool.selections;
         for (var i = 0; i < selections.length; i++) {
             display = display && (selections[i].maxInputs > 1 && selections[i].noChange !== true);
             allSame = allSame && selections[i].getInputAmount() === selections[0].getInputAmount();
@@ -20,8 +22,14 @@ class InputCountModule extends Module {
         this.div.max = minMaxValue;
     }
     onChange() {
-        var selections = selectionTool.selections;
+        var selections = SelectionTool.selections;
         for (var i = 0; i < selections.length; i++)
             selections[i].setInputAmount(Number(this.getValue()));
     }
 }
+
+module.exports = InputCountModule;
+
+// Requirements
+var SelectionTool = require("../tools/SelectionTool");
+// 

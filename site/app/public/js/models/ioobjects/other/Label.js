@@ -1,3 +1,5 @@
+var IOObject = require("../../IOObject");
+
 class Label extends IOObject {
     constructor(context, x, y) {
         super(context, x, y, 0, 0, undefined, true, 0, 0, 60, 30);
@@ -36,4 +38,14 @@ class Label extends IOObject {
     }
 }
 Label.getXMLName = function() { return "label"; }
+
+module.exports = Label;
+
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Importer = require("../../../controllers/Importer");
+
+var render = require("../../../views/Renderer").render;
+// 
+
 Importer.types.push(Label);

@@ -15,8 +15,8 @@
         <title>Open Circuits</title>
     </head>
 
-    <body onload="start();">
-        <div id="overlay" class="overlay" onclick="SideNavController.toggle();"></div>
+    <body>
+        <div id="overlay" class="overlay"></div>
         
         <nav>
             <div id="sidenav" class="sidenav">
@@ -36,18 +36,18 @@
         <div id="content" class="content">
             <header id="header">
                 <div class="header__left">
-                    <span id="open-sive-nav-button" role="button" tabindex="0" class="header__left__sidenavbutton" onclick="SideNavController.toggle();">&#9776;</span>
+                    <span id="open-side-nav-button" role="button" tabindex="0" class="header__left__sidenavbutton">&#9776;</span>
                     <input id="project-name" class="header__left__projectname" type="text" value="Untitled Circuit*" alt="Name of project">
                 </div>
                 <div class="header__center">
                     <img id="logo" class="header__center__logo" src="img/icons/logo.svg" height="100%" alt="OpenCircuits logo" />
                 </div>
                 <div class="header__right">
-                    <button type="button" onclick="document.getElementById('file-input').click();">
+                    <button id="load-button" type="button" onclick="document.getElementById('file-input').click();">
                         <img src="img/icons/open.svg" height="100%" alt="Open a file" />
                     </button>
-                    <input id="file-input" type="file" name="name" style="display: none;" onchange="openFile();" multiple="false" required="true" accept=".circuit,.xml" />
-                    <button type="button" onclick="Exporter.saveFile();">
+                    <input id="file-input" type="file" name="name" style="display: none;" multiple="false" required="true" accept=".circuit,.xml" />
+                    <button id="save-button" type="button">
                         <img src="img/icons/download.svg" height="100%" alt="Download current scene" />
                     </button>
                 </div>
@@ -56,112 +56,112 @@
             <main>
                 <nav id="items" class="itemnav">
                     <h4 unselectable>Inputs</h4>
-                    <button type="button" onclick="PlaceItemController.place(new ConstantLow());">
-                        <img src="img/icons/inputs/constLow.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Constant low" />
+                    <button id="constantlow-button" type="button">
+                        <img id="constantlow-image" src="img/icons/inputs/constLow.svg" alt="Constant low" />
                         <br/>Constant Low
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new ConstantHigh());">
-                        <img draggable="true" src="img/icons/inputs/constHigh.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Constant high" />
+                    <button id="constanthigh-button" type="button">
+                        <img id="constanthigh-image" draggable="true" src="img/icons/inputs/constHigh.svg" alt="Constant high" />
                         <br/>Constant High
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Button());">
-                        <img src="img/icons/inputs/button.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Button" />
+                    <button id="button-button" type="button">
+                        <img id="button-image" src="img/icons/inputs/button.svg" alt="Button" />
                         <br/>Button
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Switch());">
-                        <img src="img/icons/inputs/switch.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Switch" />
+                    <button id="switch-button" type="button">
+                        <img id="switch-image" src="img/icons/inputs/switch.svg" alt="Switch" />
                         <br/>Switch
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Clock());">
-                        <img src="img/icons/inputs/clock.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Clock" />
+                    <button id="clock-button" type="button">
+                        <img id="clock-image" src="img/icons/inputs/clock.svg" alt="Clock" />
                         <br/>Clock
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Keyboard());">
-                        <img src="img/icons/inputs/keyboard.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Keyboard" />
+                    <button id="keyboard-button" type="button">
+                        <img id="keyboard-image" src="img/icons/inputs/keyboard.svg" alt="Keyboard" />
                         <br/>Keyboard
                     </button>
 
                     <h4 unselectable>Outputs</h4>
-                    <button type="button" onclick="PlaceItemController.place(new LED());">
-                        <img src="img/icons/outputs/led.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="LED" />
+                    <button id="led-button" type="button">
+                        <img id="led-image" src="img/icons/outputs/led.svg" alt="LED" />
                         <br/>LED
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new SevenSegmentDisplay());">
-                        <img src="img/icons/outputs/sevensegmentdisplay.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="7 Segment Display" />
+                    <button id="7segmentdisplay-button" type="button">
+                        <img id="7segmentdisplay-image" src="img/icons/outputs/sevensegmentdisplay.svg" alt="7 Segment Display" />
                         <br/>7 Segment Display
                     </button>
 
                     <h4 unselectable>Logic Gates</h4>
-                    <button type="button" onclick="PlaceItemController.place(new BUFGate());">
-                        <img src="img/icons/logicgates/buffer.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Buffer gate" />
+                    <button id="bufgate-button" type="button">
+                        <img id="bufgate-image" src="img/icons/logicgates/buffer.svg" alt="Buffer gate" />
                         <br/>BUFFER
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new BUFGate(), true);">
-                        <img src="img/icons/logicgates/not.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="NOT gate" />
+                    <button id="notgate-button" type="button">
+                        <img id="notgate-image" src="img/icons/logicgates/not.svg" alt="NOT gate" />
                         <br/>NOT
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new ANDGate());">
-                        <img src="img/icons/logicgates/and.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="AND gate" />
+                    <button id="andgate-button" type="button">
+                        <img id="andgate-image" src="img/icons/logicgates/and.svg" alt="AND gate" />
                         <br/>AND
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new ANDGate(), true);">
-                        <img src="img/icons/logicgates/nand.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="NAND gate" />
+                    <button id="nandgate-button" type="button">
+                        <img id="nandgate-image" src="img/icons/logicgates/nand.svg" alt="NAND gate" />
                         <br/>NAND
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new ORGate());">
-                        <img src="img/icons/logicgates/or.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="OR gate" />
+                    <button id="orgate-button" type="button">
+                        <img id="orgate-image" src="img/icons/logicgates/or.svg" alt="OR gate" />
                         <br/>OR
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new ORGate(), true);">
-                        <img src="img/icons/logicgates/nor.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="NOR gate" />
+                    <button id="norgate-button" type="button">
+                        <img id="norgate-image" src="img/icons/logicgates/nor.svg" alt="NOR gate" />
                         <br/>NOR
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new XORGate());">
-                        <img src="img/icons/logicgates/xor.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="XOR gate" />
+                    <button id="xorgate-button" type="button">
+                        <img id="xorgate-image" src="img/icons/logicgates/xor.svg" alt="XOR gate" />
                         <br/>XOR
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new XORGate(), true);">
-                        <img src="img/icons/logicgates/xnor.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="XNOR gate" />
+                    <button id="xnorgate-button" type="button">
+                        <img id="xnorgate-image" src="img/icons/logicgates/xnor.svg" alt="XNOR gate" />
                         <br/>XNOR
                     </button>
 
                     <h4 unselectable>Flip Flops</h4>
-                    <button type="button" onclick="PlaceItemController.place(new SRFlipFlop());">
-                        <img src="img/icons/base.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="SR Flip Flop" />
+                    <button id="srflipflop-button" type="button">
+                        <img id="srflipflop-image" src="img/icons/base.svg" alt="SR Flip Flop" />
                         <br/>SR Flip Flop
                     </button>
 
                     <h4 unselectable>Other</h4>
-                    <button type="button" onclick="PlaceItemController.place(new Multiplexer());">
-                        <img src="img/icons/other/multiplexer.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Multiplexer" />
+                    <button id="multiplexer-button" type="button">
+                        <img id="multiplexer-image" src="img/icons/other/multiplexer.svg" alt="Multiplexer" />
                         <br/>Mux
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Demultiplexer());">
-                        <img src="img/icons/other/demultiplexer.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Demultiplexer" />
+                    <button id="demultiplexer-button" type="button">
+                        <img id="demultiplexer-image" src="img/icons/other/demultiplexer.svg" alt="Demultiplexer" />
                         <br/>Demux
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Encoder());">
-                        <img src="img/icons/other/encoder.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Encoder" />
+                    <button id="encoder-button" type="button">
+                        <img id="encoder-image" src="img/icons/other/encoder.svg" alt="Encoder" />
                         <br/>Encoder
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Decoder());">
-                        <img src="img/icons/other/encoder.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Decoder" />
+                    <button id="decoder-button" type="button">
+                        <img id="decoder-image" src="img/icons/other/encoder.svg" alt="Decoder" />
                         <br/>Decoder
                     </button>
-                    <button type="button" onclick="PlaceItemController.place(new Label());">
-                        <img src="img/icons/other/label.svg" ondragend="PlaceItemController.onDragEnd(event);" alt="Label" />
+                    <button id="label-button" type="button">
+                        <img id="label-image" src="img/icons/other/label.svg" alt="Label" />
                         <br/>Label
                     </button>
                 </nav>
-                <div id="open-items-tab" class="tab" onclick="ItemNavController.toggle();"> &#9776; </div>
+                <div id="open-items-tab" class="tab"> &#9776; </div>
 
-                <canvas id="canvas" class="canvas" ondrop="console.log('asd');"></canvas>
+                <canvas id="canvas" class="canvas"></canvas>
                 
                 <canvas id="designer-canvas" class="icdesigner" hidden></canvas>
                 
                 <div class="icbuttons">
-                    <button id="ic-confirmbutton" class="icbuttons__confirm" onclick="icdesigner.confirm();" alt="Submit IC" hidden>Confirm</button>
-                    <button id="ic-cancelbutton"  class="icbuttons__cancel" onclick="icdesigner.cancel();"  alt="Cancel IC" hidden>Cancel</button>
+                    <button id="ic-confirmbutton" class="icbuttons__confirm" alt="Submit IC" hidden>Confirm</button>
+                    <button id="ic-cancelbutton"  class="icbuttons__cancel" alt="Cancel IC" hidden>Cancel</button>
                 </div>
                 
                 <div id="popup" class="popup" tabindex="-1">
@@ -219,9 +219,7 @@
             </main>
         </div>
         
-        <script>
-            var IN_BROWSER = true;
-        </script>
-        <script src="js/combined.js"></script>
+        <!-- <script src="js/views/Main.js"></script> -->
+        <script src="js/Bundle.js"></script>
     </body>
 </html>

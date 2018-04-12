@@ -1,10 +1,12 @@
+var Module = require("../../libraries/popup/Module");
+
 class ColorPickerModule extends Module {
     constructor(parent, divName, divTextName) {
         super(parent, divName, divTextName);
     }
     onShow() {
         var allLEDs = true, allSame = true;
-        var selections = selectionTool.selections;
+        var selections = SelectionTool.selections;
         for (var i = 0; i < selections.length; i++) {
             allLEDs = allLEDs && selections[i] instanceof LED;
             if (allLEDs)
@@ -14,7 +16,7 @@ class ColorPickerModule extends Module {
         this.setValue(allLEDs && allSame ? selections[0].color : '#ffffff');
     }
     onChange() {
-        var selections = selectionTool.selections;
+        var selections = SelectionTool.selections;
         for (var i = 0; i < selections.length; i++)
             selections[i].color = this.getValue();
     }
@@ -26,3 +28,10 @@ class ColorPickerModule extends Module {
         this.onChange();
     }
 }
+
+module.exports = ColorPickerModule;
+
+// Requirements
+var SelectionTool = require("../tools/SelectionTool");
+var LED           = require("../../models/ioobjects/outputs/LED");
+// 

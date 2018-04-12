@@ -1,14 +1,14 @@
-if (!IN_BROWSER) {
-    var IOObject = require('../../IOObject');
-}
+var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
+
+var IOObject = require("../../IOObject");
 
 class Switch extends IOObject {
     constructor(context, x, y) {
-        super(context, x, y, 60*images["switchUp.svg"].ratio, 60, images["switchUp.svg"], true, 0, 1, 77*images["switchUp.svg"].ratio, 77);
+        super(context, x, y, 60*Images["switchUp.svg"].ratio, 60, Images["switchUp.svg"], true, 0, 1, 77*Images["switchUp.svg"].ratio, 77);
     }
     activate(on) {
         super.activate(on);
-        this.img = images[this.isOn ? "switchDown.svg" : "switchUp.svg"];
+        this.img = Images[this.isOn ? "switchDown.svg" : "switchUp.svg"];
     }
     click() {
         super.click();
@@ -24,8 +24,14 @@ class Switch extends IOObject {
     }
 }
 Switch.getXMLName = function() { return "switch"; }
-Importer.types.push(Switch);
 
-if (!IN_BROWSER) {
-    module.exports = Switch;
-}
+module.exports = Switch;
+
+// Requirements
+var Images   = require("../../../libraries/Images");
+var Importer = require("../../../controllers/Importer");
+
+var createTextElement = require("../../../controllers/Exporter").createTextElement;
+// 
+
+Importer.types.push(Switch);

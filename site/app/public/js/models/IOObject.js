@@ -1,3 +1,5 @@
+var IO_PORT_RADIUS = require("../libraries/Constants").IO_PORT_RADIUS;
+
 class IOObject {
     constructor(context, x, y, w, h, img, isPressable, maxInputs, maxOutputs, selectionBoxWidth, selectionBoxHeight) {
         if (context == undefined)
@@ -6,7 +8,7 @@ class IOObject {
         x = (x == undefined ? 0 : x);
         y = (y == undefined ? 0 : y)
         this.transform = new Transform(V(x, y), V(w, h), 0, context.getCamera());
-        this.cullTransform = new Transform(this.transform.getPos(), V(0,0), 0, this.context.getCamera());
+        this.cullTransform = new Transform(this.transform.getPos(), V(0,0), 0, context.getCamera());
 
         this.name = this.getDisplayName();
         this.img = img;
@@ -26,7 +28,7 @@ class IOObject {
             this.setOutputAmount(1);
     }
     setInputAmount(target) {
-        target = clamp(target, 0, this.maxInputs);
+        target = Clamp(target, 0, this.maxInputs);
         while (this.inputs.length > target)
             this.inputs.splice(this.inputs.length-1, 1);
         while (this.inputs.length < target)
@@ -37,7 +39,7 @@ class IOObject {
         this.onTransformChange();
     }
     setOutputAmount(target) {
-        target = clamp(target, 0, this.maxOutputs);
+        target = Clamp(target, 0, this.maxOutputs);
         while (this.outputs.length > target)
             this.outputs.splice(this.outputs.length-1, 1);
         while (this.outputs.length < target)
@@ -137,11 +139,11 @@ class IOObject {
             this.inputs[i].remove();
     }
     contains(pos) {
-        return rectContains(this.transform, pos);
+        return RectContains(this.transform, pos);
     }
     sContains(pos) {
         return (!this.isPressable &&  this.contains(pos)) ||
-                (this.isPressable && !this.contains(pos) && rectContains(this.selectionBoxTransform, pos));
+                (this.isPressable && !this.contains(pos) && RectContains(this.selectionBoxTransform, pos));
     }
     iPortContains(pos) {
         for (var i = 0; i < this.inputs.length; i++) {
@@ -244,20 +246,21 @@ class IOObject {
     }
     writeTo(node) {
         var objNode = createChildNode(node, this.constructor.getXMLName());
-        createTextElement(objNode, "uid", this.uid);
-        createTextElement(objNode, "name", this.getName());
-        createTextElement(objNode, "x", this.getPos().x);
-        createTextElement(objNode, "y", this.getPos().y);
+        createTextElement(objNode, "uid",   this.uid);
+        createTextElement(objNode, "name",  this.getName());
+        createTextElement(objNode, "x",     this.getPos().x);
+        createTextElement(objNode, "y",     this.getPos().y);
         createTextElement(objNode, "angle", this.getAngle());
         return objNode;
     }
     load(node) {
-        var uid = getIntValue(getChildNode(node, "uid"));
-        var name = getStringValue(getChildNode(node, "name"));
-        var x = getFloatValue(getChildNode(node, "x"));
-        var y = getFloatValue(getChildNode(node, "y"));
-        var angle = getFloatValue(getChildNode(node, "angle"));
-        var isOn = getBooleanValue(getChildNode(node, "isOn"), false);
+        var uid   = getIntValue    (getChildNode(node, "uid"));
+        var name  = getStringValue (getChildNode(node, "name"));
+        var x     = getFloatValue  (getChildNode(node, "x"));
+        var y     = getFloatValue  (getChildNode(node, "y"));
+        var angle = getFloatValue  (getChildNode(node, "angle"));
+        var isOn  = getBooleanValue(getChildNode(node, "isOn"), false);
+        
         this.uid = uid;
         this.setName(name);
         if (isOn)
@@ -267,3 +270,22 @@ class IOObject {
         return this;
     }
 }
+module.exports = IOObject;
+
+// Requirements (at end so that declaration exported is first)
+var V                 = require("../libraries/math/Vector").V;
+var Transform         = require("../libraries/math/Transform");
+var IPort             = require("./IPort");
+var OPort             = require("./OPort");
+
+var Clamp             = require("../libraries/Utils").Clamp;
+var RectContains      = require("../libraries/Utils").RectContains;
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+var getChildNode      = require("../controllers/Importer").getChildNode;
+var getIntValue       = require("../controllers/Importer").getIntValue;
+var getStringValue    = require("../controllers/Importer").getStringValue;
+var getFloatValue     = require("../controllers/Importer").getFloatValue;
+var getBooleanValue   = require("../controllers/Importer").getBooleanValue;
+var createChildNode   = require("../controllers/Exporter").createChildNode;
+var createTextElement = require("../controllers/Exporter").createTextElement;
+//

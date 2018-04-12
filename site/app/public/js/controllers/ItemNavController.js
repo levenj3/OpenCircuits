@@ -1,6 +1,10 @@
+var ITEMNAV_WIDTH = require("../libraries/Constants").ITEMNAV_WIDTH;
+
 var ItemNavController = (function() {
     var tab = document.getElementById("open-items-tab");
     var container = document.getElementById("items");
+
+    tab.onclick = () => { ItemNavController.toggle(); };
 
     var open = function() {
         container.style.width       = ITEMNAV_WIDTH + "px";
@@ -39,3 +43,5 @@ var ItemNavController = (function() {
     };
 })();
 // ItemNavController.toggle();
+
+module.exports = ItemNavController;

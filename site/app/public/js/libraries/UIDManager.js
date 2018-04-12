@@ -36,3 +36,5 @@ UIDManager.find = function(things, target) {
     }
     return undefined;
 }
+
+module.exports = UIDManager;

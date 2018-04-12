@@ -1,3 +1,5 @@
+var Action = require("./Action");
+
 class SelectAction extends Action {
     constructor(obj, flip) {
         super();
@@ -17,9 +19,15 @@ class SelectAction extends Action {
             this.reselect();
     }
     reselect() {
-        selectionTool.select([this.obj]);
+        SelectionTool.select([this.obj]);
     }
     deselect() {
-        selectionTool.deselect([this.obj]);
+        SelectionTool.deselect([this.obj]);
     }
 }
+
+module.exports = SelectAction;
+
+// Requirements
+var SelectionTool = require("../../controllers/tools/SelectionTool");
+// 

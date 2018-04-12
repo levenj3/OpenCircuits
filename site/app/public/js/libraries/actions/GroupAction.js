@@ -1,3 +1,5 @@
+var Action = require("./Action");
+
 class GroupAction extends Action {
     constructor() {
         super();
@@ -15,3 +17,5 @@ class GroupAction extends Action {
             this.actions[i].redo();
     }
 }
+
+module.exports = GroupAction;
