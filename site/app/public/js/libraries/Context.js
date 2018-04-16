@@ -139,6 +139,4 @@ var UIDManager = require("./UIDManager");
 var Wire       = require("../models/Wire");
 
 var CopyArray       = require("./Utils").CopyArray;
-var FindObjectByUID = require("./Utils").FindObjectByUID;
-var FindWireByUID   = require("./Utils").FindWireByUID;
 // 

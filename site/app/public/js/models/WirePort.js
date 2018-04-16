@@ -124,9 +124,7 @@ module.exports = WirePort;
 // Requirements
 var V         = require("../libraries/math/Vector").V;
 var Transform = require("../libraries/math/Transform");
-var Importer  = require("../controllers/Importer");
 
-var CircleContains    = require("../libraries/Utils").CircleContains;
+var CircleContains    = require("../libraries/math/MathUtils").CircleContains;
 // 
 
-Importer.types.push(WirePort);

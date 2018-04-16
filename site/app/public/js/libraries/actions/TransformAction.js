@@ -26,6 +26,7 @@ class TransformAction extends Action {
 module.exports = TransformAction;
 
 // Requirements
+var GroupAction    = require("./GroupAction");
 var SelectionTool  = require("../../controllers/tools/SelectionTool");
 var SelectionPopup = require("../../controllers/selectionpopup/SelectionPopup");
 // 

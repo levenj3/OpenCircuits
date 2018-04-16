@@ -28,9 +28,8 @@ module.exports = Button;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
 
-var CircleContains = require("../../../libraries/Utils").CircleContains;
+
+var CircleContains = require("../../../libraries/math/MathUtils").CircleContains;
 // 
 
-Importer.types.push(Button);

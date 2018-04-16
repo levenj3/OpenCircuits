@@ -110,7 +110,7 @@ var Input          = require("./Input");
 var SelectionTool  = require("./tools/SelectionTool");
 var SelectionPopup = require("./selectionpopup/SelectionPopup");
 
-var RectContains      = require("../libraries/Utils").RectContains;
-var TransformContains = require("../libraries/Utils").TransformContains;
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
+var TransformContains = require("../libraries/math/MathUtils").TransformContains;
 var getCurrentContext = require("../libraries/Context").getCurrentContext;
 // 

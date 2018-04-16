@@ -47,9 +47,8 @@ module.exports = Decoder;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
 
-var Clamp = require("../../../libraries/Utils").Clamp;
+
+var Clamp = require("../../../libraries/math/MathUtils").Clamp;
 // 
 
-Importer.types.push(Decoder);

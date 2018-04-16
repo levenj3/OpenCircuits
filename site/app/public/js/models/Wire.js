@@ -226,6 +226,14 @@ class Wire {
     }
 }
 
+function FindByUID(objects, id) {
+    for (var i = 0; i < objects.length; i++) {
+        if (objects[i].uid === id)
+            return objects[i];
+    }
+    return undefined;
+}
+
 module.exports = Wire;
 
 // Requirements
@@ -234,13 +242,11 @@ var Transform   = require("../libraries/math/Transform");
 var BezierCurve = require("../libraries/math/Bezier");
 var WirePort    = require("./WirePort");
 
-var FindByUID = require("../libraries/Utils").FindByUID;
-
-var getChildNode      = require("../controllers/Importer").getChildNode;
-var getIntValue       = require("../controllers/Importer").getIntValue;
-var getStringValue    = require("../controllers/Importer").getStringValue;
-var getFloatValue     = require("../controllers/Importer").getFloatValue;
-var getBooleanValue   = require("../controllers/Importer").getBooleanValue;
+var getChildNode    = require("../libraries/ImportUtils").getChildNode;
+var getIntValue     = require("../libraries/ImportUtils").getIntValue;
+var getStringValue  = require("../libraries/ImportUtils").getStringValue;
+var getFloatValue   = require("../libraries/ImportUtils").getFloatValue;
+var getBooleanValue = require("../libraries/ImportUtils").getBooleanValue;
 
 var createChildNode   = require("../controllers/Exporter").createChildNode;
 var createTextElement = require("../controllers/Exporter").createTextElement;

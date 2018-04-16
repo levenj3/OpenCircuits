@@ -17,7 +17,6 @@ module.exports = ConstantLow;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(ConstantLow);

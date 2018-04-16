@@ -46,7 +46,6 @@ module.exports = ANDGate;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(ANDGate);

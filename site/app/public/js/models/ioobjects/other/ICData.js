@@ -142,18 +142,17 @@ module.exports = ICData;
 // Requirements
 var V         = require("../../../libraries/math/Vector").V;
 var Transform = require("../../../libraries/math/Transform");
-var Importer  = require("../../../controllers/Importer");
 var IPort     = require("../../IPort");
 var OPort     = require("../../OPort");
 // var Clock = require("../inputs/Clock");
 
-var FindIC                = require("../../../libraries/Utils").FindIC;
-var GetAllWires           = require("../../../libraries/Utils").GetAllWires;
-var GetNearestPointOnRect = require("../../../libraries/Utils").GetNearestPointOnRect;
+var FindIC                = require("../../../libraries/ObjectUtils").FindIC;
+var GetAllWires           = require("../../../libraries/ObjectUtils").GetAllWires;
+var GetNearestPointOnRect = require("../../../libraries/math/MathUtils").GetNearestPointOnRect;
 var SeparateGroup         = require("../../../libraries/Utils").SeparateGroup;
 var CopyGroup             = require("../../../libraries/CopyUtils").CopyGroup;
 var UIDManager            = require("../../../libraries/UIDManager").GetAllWires;
+var getIntValue           = require("../../../libraries/ImportUtils").getIntValue;
+var getChildNode          = require("../../../libraries/ImportUtils").getChildNode;
 var createTextElement     = require("../../../controllers/Exporter").createTextElement;
-var getIntValue           = require("../../../controllers/Importer").getIntValue;
-var getChildNode          = require("../../../controllers/Importer").getChildNode;
 // 

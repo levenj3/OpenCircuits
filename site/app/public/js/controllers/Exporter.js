@@ -101,5 +101,5 @@ module.exports.createTextElement = createTextElement;
 
 // Requirements
 var ICData      = require("../models/ioobjects/other/ICData");
-var GetAllWires = require("../libraries/Utils").GetAllWires;
+var GetAllWires = require("../libraries/ObjectUtils").GetAllWires;
 // 

@@ -29,9 +29,8 @@ module.exports = Switch;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 
 var createTextElement = require("../../../controllers/Exporter").createTextElement;
 // 
 
-Importer.types.push(Switch);

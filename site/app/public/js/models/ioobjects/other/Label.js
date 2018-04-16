@@ -43,9 +43,8 @@ module.exports = Label;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
+
 
 var render = require("../../../views/Renderer").render;
 // 
 
-Importer.types.push(Label);

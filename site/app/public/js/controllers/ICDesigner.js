@@ -1,5 +1,5 @@
 var Context         = require("../libraries/Context");
-var CircuitDesigner = require("../views/CircuitDesigner");
+// var CircuitDesigner = require("../views/CircuitDesigner");
 
 var ICDesigner = (function() {
     var canvas        = document.getElementById("designer-canvas");
@@ -9,7 +9,7 @@ var ICDesigner = (function() {
     confirmButton.onclick = () => { ICDesigner.confirm(); };
     cancelButton.onclick  = () => { ICDesigner.cancel(); };
 
-    var designer = new CircuitDesigner(canvas, 0.84, 0.76);
+    var designer;
 
     var ic, data;
     
@@ -17,8 +17,12 @@ var ICDesigner = (function() {
     var dragObj, dragEdge;
     
     return {
-        context: new Context(designer),
+        context: undefined,
         hidden: true,
+        setup: function() {
+            designer = new CircuitDesigner(canvas, 0.84, 0.76);
+            this.context = new Context(designer);
+        },
         confirm: function() {
             if (ic != undefined) {
                 ICData.add(this.data);
@@ -150,13 +154,15 @@ module.exports = ICDesigner;
 // Requirements
 var V               = require("../libraries/math/Vector").V;
 var Transform       = require("../libraries/math/Transform");
+var Context         = require("../libraries/Context");
 var Input           = require("./Input");
 var SelectionTool   = require("./tools/SelectionTool");
 var ICData          = require("../models/ioobjects/other/ICData");
 var IC              = require("../models/ioobjects/other/IC");
+var CircuitDesigner = require("../views/CircuitDesigner");
 
-var RectContains               = require("../libraries/Utils").RectContains;
-var GetNearestPointOnRect      = require("../libraries/Utils").GetNearestPointOnRect;
+var RectContains               = require("../libraries/math/MathUtils").RectContains;
+var GetNearestPointOnRect      = require("../libraries/math/MathUtils").GetNearestPointOnRect;
 var setCurrentContext          = require("../libraries/Context").setCurrentContext;
 var getCurrentContext          = require("../libraries/Context").getCurrentContext;
 var getMainContext             = require("../libraries/Context").getMainContext;

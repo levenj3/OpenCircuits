@@ -22,7 +22,7 @@ var Clipboard = (function() {
         },
         cut: function(e) {
             this.copy(e);
-            RemoveObjects(getCurrentContext(), SelectionTool.selections, true);
+            SelectionTool.removeSelections(true);
             e.preventDefault();
         },
         paste: function(e) {
@@ -59,7 +59,6 @@ var PlaceAction   = require("./actions/PlaceAction");
 var GroupAction   = require("./actions/GroupAction");
 
 var GetAllThingsBetween = require("./Utils").GetAllThingsBetween;
-var RemoveObjects       = require("./Utils").RemoveObjects;
 var getCurrentContext   = require("./Context").getCurrentContext;
 var render              = require("../views/Renderer").render;
 // 

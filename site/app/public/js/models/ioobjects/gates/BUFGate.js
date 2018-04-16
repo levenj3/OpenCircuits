@@ -24,7 +24,6 @@ module.exports = BUFGate;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(BUFGate);

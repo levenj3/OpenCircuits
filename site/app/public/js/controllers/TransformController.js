@@ -1,6 +1,6 @@
 var GRID_SIZE              = require("../libraries/Constants").GRID_SIZE;
-var ROTATION_CIRCLE_R2     = require("../libraries/Utils").ROTATION_CIRCLE_R2;
-var ROTATION_CIRCLE_R1     = require("../libraries/Utils").ROTATION_CIRCLE_R1;
+var ROTATION_CIRCLE_R2     = require("../libraries/Constants").ROTATION_CIRCLE_R2;
+var ROTATION_CIRCLE_R1     = require("../libraries/Constants").ROTATION_CIRCLE_R1;
 var ROTATION_CIRCLE_RADIUS = require("../libraries/Constants").ROTATION_CIRCLE_RADIUS;
 
 var V = require("../libraries/math/Vector").V;
@@ -170,13 +170,26 @@ var TransformController = (function() {
     };
 })();
 
+function CreateTransformAction(objects, t0) {
+    var action = new GroupAction();
+    for (var i = 0; i < objects.length; i++) {
+        var origin = t0[i];
+        var target = objects[i].transform.copy();
+        if (origin.equals(target))
+            continue;
+        action.add(new TransformAction(objects[i], origin, target));
+    }
+    return action;
+}
+
 module.exports = TransformController;
 
 // Requirements
-var Input          = require("./Input");
-var SelectionTool  = require("./tools/SelectionTool");
-var SelectionPopup = require("./selectionpopup/SelectionPopup");
+var Input           = require("./Input");
+var SelectionTool   = require("./tools/SelectionTool");
+var SelectionPopup  = require("./selectionpopup/SelectionPopup");
+var GroupAction     = require("../libraries/actions/GroupAction");
+var TransformAction = require("../libraries/actions/TransformAction");
 
-var CreateTransformAction = require("../libraries/Utils").CreateTransformAction;
 var getCurrentContext     = require("../libraries/Context").getCurrentContext;
 // 

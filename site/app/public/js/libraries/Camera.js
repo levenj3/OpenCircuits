@@ -69,5 +69,5 @@ var V         = require("./math/Vector").V;
 var Matrix2x3 = require("./math/Matrix");
 var Transform = require("./math/Transform");
 
-var TransformContains = require("./Utils").TransformContains;
+var TransformContains = require("./math/MathUtils").TransformContains;
 // 

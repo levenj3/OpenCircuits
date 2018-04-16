@@ -278,14 +278,14 @@ var Transform         = require("../libraries/math/Transform");
 var IPort             = require("./IPort");
 var OPort             = require("./OPort");
 
-var Clamp             = require("../libraries/Utils").Clamp;
-var RectContains      = require("../libraries/Utils").RectContains;
+var Clamp             = require("../libraries/math/MathUtils").Clamp;
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
 var getCurrentContext = require("../libraries/Context").getCurrentContext;
-var getChildNode      = require("../controllers/Importer").getChildNode;
-var getIntValue       = require("../controllers/Importer").getIntValue;
-var getStringValue    = require("../controllers/Importer").getStringValue;
-var getFloatValue     = require("../controllers/Importer").getFloatValue;
-var getBooleanValue   = require("../controllers/Importer").getBooleanValue;
+var getChildNode      = require("../libraries/ImportUtils").getChildNode;
+var getIntValue       = require("../libraries/ImportUtils").getIntValue;
+var getStringValue    = require("../libraries/ImportUtils").getStringValue;
+var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
+var getBooleanValue   = require("../libraries/ImportUtils").getBooleanValue;
 var createChildNode   = require("../controllers/Exporter").createChildNode;
 var createTextElement = require("../controllers/Exporter").createTextElement;
 //

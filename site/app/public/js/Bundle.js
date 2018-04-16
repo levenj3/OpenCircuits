@@ -102,11 +102,11 @@ module.exports.createTextElement = createTextElement;
 
 // Requirements
 var ICData      = require("../models/ioobjects/other/ICData");
-var GetAllWires = require("../libraries/Utils").GetAllWires;
+var GetAllWires = require("../libraries/ObjectUtils").GetAllWires;
 // 
-},{"../libraries/Utils":35,"../models/ioobjects/other/ICData":70}],2:[function(require,module,exports){
+},{"../libraries/ObjectUtils":35,"../models/ioobjects/other/ICData":76}],2:[function(require,module,exports){
 var Context         = require("../libraries/Context");
-var CircuitDesigner = require("../views/CircuitDesigner");
+// var CircuitDesigner = require("../views/CircuitDesigner");
 
 var ICDesigner = (function() {
     var canvas        = document.getElementById("designer-canvas");
@@ -116,7 +116,7 @@ var ICDesigner = (function() {
     confirmButton.onclick = () => { ICDesigner.confirm(); };
     cancelButton.onclick  = () => { ICDesigner.cancel(); };
 
-    var designer = new CircuitDesigner(canvas, 0.84, 0.76);
+    var designer;
 
     var ic, data;
     
@@ -124,8 +124,12 @@ var ICDesigner = (function() {
     var dragObj, dragEdge;
     
     return {
-        context: new Context(designer),
+        context: undefined,
         hidden: true,
+        setup: function() {
+            designer = new CircuitDesigner(canvas, 0.84, 0.76);
+            this.context = new Context(designer);
+        },
         confirm: function() {
             if (ic != undefined) {
                 ICData.add(this.data);
@@ -257,179 +261,22 @@ module.exports = ICDesigner;
 // Requirements
 var V               = require("../libraries/math/Vector").V;
 var Transform       = require("../libraries/math/Transform");
+var Context         = require("../libraries/Context");
 var Input           = require("./Input");
 var SelectionTool   = require("./tools/SelectionTool");
 var ICData          = require("../models/ioobjects/other/ICData");
 var IC              = require("../models/ioobjects/other/IC");
+var CircuitDesigner = require("../views/CircuitDesigner");
 
-var RectContains               = require("../libraries/Utils").RectContains;
-var GetNearestPointOnRect      = require("../libraries/Utils").GetNearestPointOnRect;
+var RectContains               = require("../libraries/math/MathUtils").RectContains;
+var GetNearestPointOnRect      = require("../libraries/math/MathUtils").GetNearestPointOnRect;
 var setCurrentContext          = require("../libraries/Context").setCurrentContext;
 var getCurrentContext          = require("../libraries/Context").getCurrentContext;
 var getMainContext             = require("../libraries/Context").getMainContext;
 var render                     = require("../views/Renderer").render;
 //
 
-},{"../libraries/Context":29,"../libraries/Utils":35,"../libraries/math/Transform":44,"../libraries/math/Vector":45,"../models/ioobjects/other/IC":69,"../models/ioobjects/other/ICData":70,"../views/CircuitDesigner":75,"../views/Renderer":77,"./Input":4,"./tools/SelectionTool":25}],3:[function(require,module,exports){
-var Importer = (function() {   
-    var fileInput = document.getElementById('file-input');
-    fileInput.onchange = () => { Importer.openFile(); };
-     
-    return {
-        types: [],
-        openFile: function() {
-            // TODO: Custom popup w/ option to save
-            var open = confirm("Are you sure you want to overwrite your current scene?");
-
-            if (open) {
-                reset();
-
-                var reader = new FileReader();
-
-                reader.onload = (e) => {
-                    this.load(reader.result, getCurrentContext());
-                    render();
-                }
-
-                reader.readAsText(fileInput.files[0]);
-            }
-        },
-        load: function(text, context) {
-            // Remove all whitespace from XML file except for header
-            var header = text.substring(0, text.indexOf(">")+1);
-            text = header + text.substring(text.indexOf(">")+1).replace(/\s/g,'');
-
-            var root = new window.DOMParser().parseFromString(text, "text/xml");
-            if (root.documentElement.nodeName == "parsererror")
-                return;
-
-            var project = getChildNode(root, "project");
-            var icsNode = getChildNode(project, "ics");
-
-            var ics = this.loadICs(icsNode, context);
-
-            var group = this.loadGroup(project, context, ics);
-            context.addObjects(group.objects);
-            context.addWires(group.wires);
-
-            for (var i = 0; i < ics.length; i++)
-                ICData.add(ics[i]);
-
-            context.redistributeUIDs();
-            ICData.redistributeUIDs();
-
-            return group;
-        },
-        loadGroup: function(node, context, ics) {
-            var objectsNode = getChildNode(node, "objects");
-            var wiresNode   = getChildNode(node, "wires");
-
-            var objects = [];
-            var wires = [];
-
-            for (var i = 0; i < this.types.length; i++) {
-                var type = this.types[i];
-                var nodes = getChildrenByTagName(objectsNode, type.getXMLName());
-                for (var j = 0; j < nodes.length; j++)
-                    objects.push(new type(context).load(nodes[j], ics));
-            }
-
-            var wiresArr = getChildrenByTagName(wiresNode, "wire");
-            for (var i = 0; i < wiresArr.length; i++)
-                wires.push(new Wire(context).load(wiresArr[i]));
-
-            for (var i = 0; i < wires.length; i++)
-                wires[i].loadConnections(wiresArr[i], objects);
-
-            return {objects:objects, wires:wires};
-        },
-        loadICs: function(node, context) {
-            var ics = [];
-            var icNodes = getChildrenByTagName(node, "ic");
-            for (var i = 0; i < icNodes.length; i++) {
-                var icNode = icNodes[i];
-                var icuid  = getIntValue(getChildNode(icNode, "icuid"));
-                var width  = getIntValue(getChildNode(icNode, "width"));
-                var height = getIntValue(getChildNode(icNode, "height"));
-
-                var componentsNode = getChildNode(icNode, "components");
-                var group = this.loadGroup(componentsNode, context, ics);
-                var data = ICData.create(group.objects);
-
-                data.icuid = icuid;
-                data.transform.setSize(V(width, height));
-
-                var iports = getChildrenByTagName(getChildNode(icNode, "iports"), "iport");
-                for (var j = 0; j < iports.length; j++)
-                    data.iports[j] = new IPort().load(iports[j]);
-
-                var oports = getChildrenByTagName(getChildNode(icNode, "oports"), "oport");
-                for (var j = 0; j < oports.length; j++)
-                    data.oports[j] = new OPort().load(oports[j]);
-
-                ics.push(data);
-            }
-            return ics;
-        }
-    };
-})();
-
-// UTILS
-function getChildNode(parent, name) {
-    for (var i = 0; i < parent.childNodes.length; i++) {
-        if (parent.childNodes[i].nodeName === name)
-            return parent.childNodes[i];
-    }
-    return undefined;
-}
-function getChildrenByTagName(parent, name) {
-    var children = [];
-    for (var i = 0; i < parent.childNodes.length; i++) {
-        if (parent.childNodes[i].nodeName === name)
-            children.push(parent.childNodes[i]);
-    }
-    return children;
-}
-function getBooleanValue(node, def) {
-    if (node == undefined)
-        return def;
-    return node.childNodes[0].nodeValue === "true" ? true : false;
-}
-function getIntValue(node, def) {
-    if (node == undefined)
-        return def;
-    return parseInt(node.childNodes[0].nodeValue);
-}
-function getFloatValue(node, def) {
-    if (node == undefined)
-        return def;
-    return parseFloat(node.childNodes[0].nodeValue);
-}
-function getStringValue(node, def) {
-    if (node == undefined)
-        return def;
-    return node.childNodes[0].nodeValue;
-}
-
-module.exports = Importer;
-module.exports.getChildNode = getChildNode;
-module.exports.getChildrenByTagName = getChildrenByTagName;
-module.exports.getBooleanValue = getBooleanValue;
-module.exports.getIntValue = getIntValue;
-module.exports.getFloatValue = getIntValue;
-module.exports.getStringValue = getIntValue;
-
-// Requirements
-var ICData = require("../models/ioobjects/other/ICData");
-var Wire   = require("../models/Wire");
-var IPort  = require("../models/IPort");
-
-var getCurrentContext = require("../libraries/Context").getCurrentContext;
-var reset             = require("../libraries/Context").reset;
-var render            = require("../views/Renderer").render;
-//
-
-},{"../libraries/Context":29,"../models/IPort":50,"../models/Wire":52,"../models/ioobjects/other/ICData":70,"../views/Renderer":77}],4:[function(require,module,exports){
+},{"../libraries/Context":30,"../libraries/math/MathUtils":48,"../libraries/math/Transform":50,"../libraries/math/Vector":51,"../models/ioobjects/other/IC":75,"../models/ioobjects/other/ICData":76,"../views/CircuitDesigner":81,"../views/Renderer":83,"./Input":3,"./tools/SelectionTool":25}],3:[function(require,module,exports){
 var LEFT_MOUSE_BUTTON = require("../libraries/Constants").LEFT_MOUSE_BUTTON;
 var SHIFT_KEY         = require("../libraries/Constants").SHIFT_KEY;
 var CONTROL_KEY       = require("../libraries/Constants").CONTROL_KEY;
@@ -671,7 +518,7 @@ var getCurrentContext = require("../libraries/Context").getCurrentContext;
 var getCurrentTool    = require("./tools/Tool").getCurrent;
 var render            = require("../views/Renderer").render;
 //
-},{"../libraries/Constants":28,"../libraries/Context":29,"../libraries/Utils":35,"../libraries/math/Vector":45,"../models/ioobjects/inputs/Keyboard":64,"../views/Renderer":77,"./PlaceItemController":6,"./contextmenu/ContextMenu":9,"./selectionpopup/SelectionPopup":22,"./tools/Tool":26}],5:[function(require,module,exports){
+},{"../libraries/Constants":29,"../libraries/Context":30,"../libraries/Utils":38,"../libraries/math/Vector":51,"../models/ioobjects/inputs/Keyboard":70,"../views/Renderer":83,"./PlaceItemController":5,"./contextmenu/ContextMenu":9,"./selectionpopup/SelectionPopup":22,"./tools/Tool":26}],4:[function(require,module,exports){
 var ITEMNAV_WIDTH = require("../libraries/Constants").ITEMNAV_WIDTH;
 
 var ItemNavController = (function() {
@@ -719,7 +566,7 @@ var ItemNavController = (function() {
 // ItemNavController.toggle();
 
 module.exports = ItemNavController;
-},{"../libraries/Constants":28}],6:[function(require,module,exports){
+},{"../libraries/Constants":29}],5:[function(require,module,exports){
 // Require all IOObjects
 var SevenSegmentDisplay = require("../models/ioobjects/outputs/7SegmentDisplay");
 var ConstantLow   = require("../models/ioobjects/inputs/ConstantLow");
@@ -796,7 +643,7 @@ var ItemTool = require("./tools/ItemTool");
 
 var getCurrentContext = require("../libraries/Context").getCurrentContext;
 // 
-},{"../libraries/Context":29,"../models/ioobjects/flipflops/SRFlipFlop":55,"../models/ioobjects/gates/ANDGate":56,"../models/ioobjects/gates/BUFGate":57,"../models/ioobjects/gates/ORGate":58,"../models/ioobjects/gates/XORGate":59,"../models/ioobjects/inputs/Button":60,"../models/ioobjects/inputs/Clock":61,"../models/ioobjects/inputs/ConstantHigh":62,"../models/ioobjects/inputs/ConstantLow":63,"../models/ioobjects/inputs/Keyboard":64,"../models/ioobjects/inputs/Switch":65,"../models/ioobjects/other/Decoder":66,"../models/ioobjects/other/Demultiplexer":67,"../models/ioobjects/other/Encoder":68,"../models/ioobjects/other/Label":71,"../models/ioobjects/other/Multiplexer":72,"../models/ioobjects/outputs/7SegmentDisplay":73,"../models/ioobjects/outputs/LED":74,"./tools/ItemTool":24}],7:[function(require,module,exports){
+},{"../libraries/Context":30,"../models/ioobjects/flipflops/SRFlipFlop":61,"../models/ioobjects/gates/ANDGate":62,"../models/ioobjects/gates/BUFGate":63,"../models/ioobjects/gates/ORGate":64,"../models/ioobjects/gates/XORGate":65,"../models/ioobjects/inputs/Button":66,"../models/ioobjects/inputs/Clock":67,"../models/ioobjects/inputs/ConstantHigh":68,"../models/ioobjects/inputs/ConstantLow":69,"../models/ioobjects/inputs/Keyboard":70,"../models/ioobjects/inputs/Switch":71,"../models/ioobjects/other/Decoder":72,"../models/ioobjects/other/Demultiplexer":73,"../models/ioobjects/other/Encoder":74,"../models/ioobjects/other/Label":77,"../models/ioobjects/other/Multiplexer":78,"../models/ioobjects/outputs/7SegmentDisplay":79,"../models/ioobjects/outputs/LED":80,"./tools/ItemTool":24}],6:[function(require,module,exports){
 var SelectionBox = (function () {
     var pos1 = undefined; // First corner
     var pos2 = undefined; // Second corner
@@ -909,14 +756,14 @@ var Input          = require("./Input");
 var SelectionTool  = require("./tools/SelectionTool");
 var SelectionPopup = require("./selectionpopup/SelectionPopup");
 
-var RectContains      = require("../libraries/Utils").RectContains;
-var TransformContains = require("../libraries/Utils").TransformContains;
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
+var TransformContains = require("../libraries/math/MathUtils").TransformContains;
 var getCurrentContext = require("../libraries/Context").getCurrentContext;
 // 
-},{"../libraries/Context":29,"../libraries/Utils":35,"../libraries/math/Transform":44,"../libraries/math/Vector":45,"./Input":4,"./selectionpopup/SelectionPopup":22,"./tools/SelectionTool":25}],8:[function(require,module,exports){
+},{"../libraries/Context":30,"../libraries/math/MathUtils":48,"../libraries/math/Transform":50,"../libraries/math/Vector":51,"./Input":3,"./selectionpopup/SelectionPopup":22,"./tools/SelectionTool":25}],7:[function(require,module,exports){
 var GRID_SIZE              = require("../libraries/Constants").GRID_SIZE;
-var ROTATION_CIRCLE_R2     = require("../libraries/Utils").ROTATION_CIRCLE_R2;
-var ROTATION_CIRCLE_R1     = require("../libraries/Utils").ROTATION_CIRCLE_R1;
+var ROTATION_CIRCLE_R2     = require("../libraries/Constants").ROTATION_CIRCLE_R2;
+var ROTATION_CIRCLE_R1     = require("../libraries/Constants").ROTATION_CIRCLE_R1;
 var ROTATION_CIRCLE_RADIUS = require("../libraries/Constants").ROTATION_CIRCLE_RADIUS;
 
 var V = require("../libraries/math/Vector").V;
@@ -1003,10 +850,15 @@ var TransformController = (function() {
             var objects       = getCurrentContext().getObjects();
             var worldMousePos = Input.getWorldMousePos();
 
+            console.log("ASD");
+
             // Check if rotation circle was pressed
             if (!isRotating && SelectionTool.selections.length > 0) {
+                console.log("press");
                 var d = worldMousePos.sub(SelectionTool.midpoint).len2();
+                console.log(d)
                 if (d <= ROTATION_CIRCLE_R2 && d >= ROTATION_CIRCLE_R1) {
+                    console.log("2");
                     return this.startRotation(SelectionTool.selections, worldMousePos);
                 }
             }
@@ -1086,17 +938,142 @@ var TransformController = (function() {
     };
 })();
 
+function CreateTransformAction(objects, t0) {
+    var action = new GroupAction();
+    for (var i = 0; i < objects.length; i++) {
+        var origin = t0[i];
+        var target = objects[i].transform.copy();
+        if (origin.equals(target))
+            continue;
+        action.add(new TransformAction(objects[i], origin, target));
+    }
+    return action;
+}
+
 module.exports = TransformController;
 
 // Requirements
-var Input          = require("./Input");
-var SelectionTool  = require("./tools/SelectionTool");
-var SelectionPopup = require("./selectionpopup/SelectionPopup");
+var Input           = require("./Input");
+var SelectionTool   = require("./tools/SelectionTool");
+var SelectionPopup  = require("./selectionpopup/SelectionPopup");
+var GroupAction     = require("../libraries/actions/GroupAction");
+var TransformAction = require("../libraries/actions/TransformAction");
 
-var CreateTransformAction = require("../libraries/Utils").CreateTransformAction;
 var getCurrentContext     = require("../libraries/Context").getCurrentContext;
 // 
-},{"../libraries/Constants":28,"../libraries/Context":29,"../libraries/Utils":35,"../libraries/math/Vector":45,"./Input":4,"./selectionpopup/SelectionPopup":22,"./tools/SelectionTool":25}],9:[function(require,module,exports){
+},{"../libraries/Constants":29,"../libraries/Context":30,"../libraries/actions/GroupAction":41,"../libraries/actions/TransformAction":46,"../libraries/math/Vector":51,"./Input":3,"./selectionpopup/SelectionPopup":22,"./tools/SelectionTool":25}],8:[function(require,module,exports){
+var WireController = (function() {
+    var pressedPort = undefined;
+    
+    var pressedWire = undefined;
+    var wireSplitPoint = -1;
+
+    return {
+        onMouseDown: function(somethingHappened) {
+            var objects       = getCurrentContext().getObjects();
+            var wires         = getCurrentContext().getWires();
+            var worldMousePos = Input.getWorldMousePos();
+                        
+            // Make sure nothing else has happened
+            if (somethingHappened)
+                return;
+            
+            // Check if a IOPort was clicked to start creating new wire
+            for (var i = objects.length-1; i >= 0; i--) {
+                var obj = objects[i];
+
+                // Check if port was clicked, then activate wire tool
+                var ii;
+                if ((ii = obj.oPortContains(worldMousePos)) !== -1) {
+                    pressedPort = obj.outputs[ii];
+                    return;
+                }
+                if ((ii = obj.iPortContains(worldMousePos)) !== -1) {
+                    pressedPort = obj.inputs[ii];
+                    return;
+                }
+            }
+            
+            // Check if a wire was pressed
+            for (var i = 0; i < wires.length; i++) {
+                var wire = wires[i];
+                var t;
+                if ((t = wire.getNearestT(worldMousePos.x, worldMousePos.y)) !== -1) {
+                    pressedWire = wire;
+                    wireSplitPoint = t;
+                    return true;
+                }
+            }
+        },
+        onMouseMove: function(somethingHappened) {
+            var worldMousePos = Input.getWorldMousePos();
+            
+            // Make sure nothing else has happened
+            if (somethingHappened)
+                return;
+                
+            // Begin dragging new wire
+            if (pressedPort != undefined) {
+                WiringTool.activate(pressedPort, getCurrentContext());
+                pressedPort = undefined;
+                return true;
+            }
+            
+            // Begin splitting wire
+            if (pressedWire != undefined) {
+                pressedWire.split(wireSplitPoint);
+                var action = new SplitWireAction(pressedWire);
+                getCurrentContext().addAction(action);
+                SelectionTool.deselectAll();
+                SelectionTool.select([pressedWire.connection]);
+                TransformController.startDrag(pressedWire.connection, worldMousePos);
+                pressedWire = undefined;
+                return true;
+            }
+        },
+        onMouseUp: function() {   
+        },
+        onClick: function(somethingHappened) {
+            // Make sure nothing else has happened
+            if (somethingHappened) {
+                pressedPort = undefined;
+                pressedWire = undefined;
+                return;
+            }
+
+            // Clicking also begins dragging
+            if (pressedPort != undefined) {
+                WiringTool.activate(pressedPort, getCurrentContext());
+                pressedPort = undefined;
+                return true;
+            }
+
+            // Select wire
+            if (pressedWire != undefined) {
+                if (!Input.getShiftKeyDown())
+                    SelectionTool.deselectAll(true);
+                SelectionTool.select([pressedWire], true);
+                pressedWire = undefined;
+                return true;
+            }
+        }
+    };
+})();
+
+module.exports = WireController;
+
+// Requirements
+var V                   = require("../libraries/math/Vector").V;
+var SplitWireAction     = require("../libraries/actions/SplitWireAction");
+var Input               = require("./Input");
+var TransformController = require("./TransformController");
+var SelectionTool       = require("./tools/SelectionTool");
+var WiringTool          = require("./tools/WiringTool");
+var SelectionPopup      = require("./selectionpopup/SelectionPopup");
+
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+// 
+},{"../libraries/Context":30,"../libraries/actions/SplitWireAction":45,"../libraries/math/Vector":51,"./Input":3,"./TransformController":7,"./selectionpopup/SelectionPopup":22,"./tools/SelectionTool":25,"./tools/WiringTool":27}],9:[function(require,module,exports){
 var Popup           = require("../../libraries/popup/Popup");
 var CutModule       = require("./CutModule");
 var CopyModule      = require("./CopyModule");
@@ -1137,7 +1114,7 @@ module.exports = contextmenu;
 // Requirements
 var Input = require("../Input");
 // 
-},{"../../libraries/popup/Popup":47,"../Input":4,"./CopyModule":10,"./CutModule":11,"./PasteModule":12,"./RedoModule":13,"./SelectAllModule":14,"./UndoModule":15}],10:[function(require,module,exports){
+},{"../../libraries/popup/Popup":53,"../Input":3,"./CopyModule":10,"./CutModule":11,"./PasteModule":12,"./RedoModule":13,"./SelectAllModule":14,"./UndoModule":15}],10:[function(require,module,exports){
 var Module        = require("../../libraries/popup/Module");
 var SelectionTool = require("../tools/SelectionTool");
 
@@ -1155,7 +1132,7 @@ class CopyModule extends Module {
 }
 
 module.exports = CopyModule;
-},{"../../libraries/popup/Module":46,"../tools/SelectionTool":25}],11:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../tools/SelectionTool":25}],11:[function(require,module,exports){
 var Module        = require("../../libraries/popup/Module");
 var SelectionTool = require("../tools/SelectionTool");
 
@@ -1173,7 +1150,7 @@ class CutModule extends Module {
 }
 
 module.exports = CutModule;
-},{"../../libraries/popup/Module":46,"../tools/SelectionTool":25}],12:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../tools/SelectionTool":25}],12:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class PasteModule extends Module {
@@ -1190,7 +1167,7 @@ class PasteModule extends Module {
 }
 
 module.exports = PasteModule;
-},{"../../libraries/popup/Module":46}],13:[function(require,module,exports){
+},{"../../libraries/popup/Module":52}],13:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class RedoModule extends Module {
@@ -1207,7 +1184,7 @@ class RedoModule extends Module {
 }
 
 module.exports = RedoModule;
-},{"../../libraries/popup/Module":46}],14:[function(require,module,exports){
+},{"../../libraries/popup/Module":52}],14:[function(require,module,exports){
 var Module        = require("../../libraries/popup/Module");
 var SelectionTool = require("../tools/SelectionTool");
 
@@ -1228,7 +1205,7 @@ class SelectAllModule extends Module {
 }
 
 module.exports = SelectAllModule;
-},{"../../libraries/popup/Module":46,"../../views/Renderer":77,"../tools/SelectionTool":25}],15:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../../views/Renderer":83,"../tools/SelectionTool":25}],15:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class UndoModule extends Module {
@@ -1245,7 +1222,7 @@ class UndoModule extends Module {
 }
 
 module.exports = UndoModule;
-},{"../../libraries/popup/Module":46}],16:[function(require,module,exports){
+},{"../../libraries/popup/Module":52}],16:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class BusButtonModule extends Module {
@@ -1324,7 +1301,7 @@ var Wire          = require("../../models/Wire");
 
 var render = require("../../views/Renderer").render;
 // 
-},{"../../libraries/popup/Module":46,"../../models/IPort":50,"../../models/OPort":51,"../../models/Wire":52,"../../views/Renderer":77,"../tools/SelectionTool":25}],17:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../../models/IPort":56,"../../models/OPort":57,"../../models/Wire":58,"../../views/Renderer":83,"../tools/SelectionTool":25}],17:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class ColorPickerModule extends Module {
@@ -1362,7 +1339,7 @@ module.exports = ColorPickerModule;
 var SelectionTool = require("../tools/SelectionTool");
 var LED           = require("../../models/ioobjects/outputs/LED");
 // 
-},{"../../libraries/popup/Module":46,"../../models/ioobjects/outputs/LED":74,"../tools/SelectionTool":25}],18:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../../models/ioobjects/outputs/LED":80,"../tools/SelectionTool":25}],18:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class ICButtonModule extends Module {
@@ -1391,7 +1368,7 @@ var WirePort      = require("../../models/WirePort");
 var ICDesigner    = require("../ICDesigner");
 var SelectionTool = require("../tools/SelectionTool");
 // 
-},{"../../libraries/popup/Module":46,"../../models/IOObject":48,"../../models/WirePort":53,"../ICDesigner":2,"../tools/SelectionTool":25}],19:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../../models/IOObject":54,"../../models/WirePort":59,"../ICDesigner":2,"../tools/SelectionTool":25}],19:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class InputCountModule extends Module {
@@ -1427,7 +1404,7 @@ module.exports = InputCountModule;
 // Requirements
 var SelectionTool = require("../tools/SelectionTool");
 // 
-},{"../../libraries/popup/Module":46,"../tools/SelectionTool":25}],20:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../tools/SelectionTool":25}],20:[function(require,module,exports){
 var GRID_SIZE = require("../../libraries/Constants").GRID_SIZE;
 
 var Module = require("../../libraries/popup/Module");
@@ -1471,7 +1448,7 @@ var SelectionTool   = require("../tools/SelectionTool");
 
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
 // 
-},{"../../libraries/Constants":28,"../../libraries/Context":29,"../../libraries/actions/GroupAction":38,"../../libraries/actions/TransformAction":41,"../../libraries/math/Vector":45,"../../libraries/popup/Module":46,"../tools/SelectionTool":25}],21:[function(require,module,exports){
+},{"../../libraries/Constants":29,"../../libraries/Context":30,"../../libraries/actions/GroupAction":41,"../../libraries/actions/TransformAction":46,"../../libraries/math/Vector":51,"../../libraries/popup/Module":52,"../tools/SelectionTool":25}],21:[function(require,module,exports){
 var GRID_SIZE = require("../../libraries/Constants").GRID_SIZE;
 
 var Module = require("../../libraries/popup/Module");
@@ -1515,7 +1492,7 @@ var SelectionTool   = require("../tools/SelectionTool");
 
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
 // 
-},{"../../libraries/Constants":28,"../../libraries/Context":29,"../../libraries/actions/GroupAction":38,"../../libraries/actions/TransformAction":41,"../../libraries/math/Vector":45,"../../libraries/popup/Module":46,"../tools/SelectionTool":25}],22:[function(require,module,exports){
+},{"../../libraries/Constants":29,"../../libraries/Context":30,"../../libraries/actions/GroupAction":41,"../../libraries/actions/TransformAction":46,"../../libraries/math/Vector":51,"../../libraries/popup/Module":52,"../tools/SelectionTool":25}],22:[function(require,module,exports){
 var DELETE_KEY = require("../../libraries/Constants").DELETE_KEY;
 var ESC_KEY    = require("../../libraries/Constants").ESC_KEY;
 
@@ -1546,7 +1523,7 @@ class SelectionPopup extends Popup {
     }
     onKeyDown(code) {
         if (code === DELETE_KEY && !this.focused) {
-            RemoveObjects(getCurrentContext(), SelectionTool.selections, true);
+            SelectionTool.removeSelections(true);
             return;
         }
         if (code === ESC_KEY && !this.hidden) {
@@ -1587,10 +1564,9 @@ module.exports = selectionpopup;
 // Requirements
 var SelectionTool = require("../tools/SelectionTool");
 
-var RemoveObjects     = require("../../libraries/Utils").RemoveObjects;
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
 // 
-},{"../../libraries/Constants":28,"../../libraries/Context":29,"../../libraries/Utils":35,"../../libraries/popup/Popup":47,"../tools/SelectionTool":25,"./BusButtonModule":16,"./ColorPickerModule":17,"./ICButtonModule":18,"./InputCountModule":19,"./PositionXModule":20,"./PositionYModule":21,"./TitleModule":23}],23:[function(require,module,exports){
+},{"../../libraries/Constants":29,"../../libraries/Context":30,"../../libraries/popup/Popup":53,"../tools/SelectionTool":25,"./BusButtonModule":16,"./ColorPickerModule":17,"./ICButtonModule":18,"./InputCountModule":19,"./PositionXModule":20,"./PositionYModule":21,"./TitleModule":23}],23:[function(require,module,exports){
 var Module = require("../../libraries/popup/Module");
 
 class TitleModule extends Module {
@@ -1623,7 +1599,7 @@ module.exports = TitleModule;
 // Requirements
 var SelectionTool = require("../tools/SelectionTool");
 // 
-},{"../../libraries/popup/Module":46,"../tools/SelectionTool":25}],24:[function(require,module,exports){
+},{"../../libraries/popup/Module":52,"../tools/SelectionTool":25}],24:[function(require,module,exports){
 var ItemTool = (function() {
     return {
         isActive: false,
@@ -1670,7 +1646,7 @@ var SelectionTool = require("./SelectionTool");
 
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
 // 
-},{"../../libraries/Context":29,"../../libraries/actions/PlaceAction":39,"../Input":4,"./SelectionTool":25,"./Tool":26}],25:[function(require,module,exports){
+},{"../../libraries/Context":30,"../../libraries/actions/PlaceAction":42,"../Input":3,"./SelectionTool":25,"./Tool":26}],25:[function(require,module,exports){
 var A_KEY                     = require("../../libraries/Constants").A_KEY;
 var ROTATION_CIRCLE_RADIUS    = require("../../libraries/Constants").ROTATION_CIRCLE_RADIUS;
 var ROTATION_CIRCLE_THICKNESS = require("../../libraries/Constants").ROTATION_CIRCLE_THICKNESS;
@@ -1855,6 +1831,33 @@ var SelectionTool = (function() {
                 this.midpoint.translate(this.selections[i].getPos());
             this.midpoint = this.midpoint.scale(1. / this.selections.length);
         },
+        removeSelections(doAction) {
+            if (this.selections.length === 0)
+                return;
+                
+            var action = new GroupAction();
+            var things = GetAllThingsBetween(objects);
+            for (var i = 0; i < things.length; i++) {
+                if (things[i].selected)
+                    this.deselect([things[i]]);
+                if (things[i] instanceof Wire || things[i] instanceof WirePort) {
+                    var oldinput = things[i].input;
+                    var oldconnection = things[i].connection;
+                    things[i].remove();
+                    if (doAction)
+                        action.add(new DeleteAction(things[i], oldinput, oldconnection));
+                }
+            }
+            for (var i = 0; i < things.length; i++) {
+                if (!(things[i] instanceof Wire || things[i] instanceof WirePort)) {
+                    things[i].remove();
+                    if (doAction)
+                        action.add(new DeleteAction(things[i]));
+                }
+            }
+            if (doAction)
+                getCurrentContext().addAction(action);
+        },
         draw: function(renderer) {
             var camera = renderer.getCamera();
             if (this.selections.length > 0 && !this.drag) {
@@ -1872,7 +1875,9 @@ module.exports = SelectionTool;
 
 // Requirements
 var SelectAction        = require("../../libraries/actions/SelectAction");
+var DeleteAction        = require("../../libraries/actions/DeleteAction");
 var GroupAction         = require("../../libraries/actions/GroupAction");
+var GetAllThingsBetween = require("../../libraries/ObjectUtils").GetAllThingsBetween;
 var Input               = require("../Input");
 var ICDesigner          = require("../ICDesigner");
 var TransformController = require("../TransformController");
@@ -1881,10 +1886,11 @@ var SelectionPopup      = require("../selectionpopup/SelectionPopup");
 var Tool                = require("./Tool");
 var IOObject            = require("../../models/IOObject");
 var Wire                = require("../../models/Wire");
+var WirePort            = require("../../models/WirePort");
 
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
 //
-},{"../../libraries/Constants":28,"../../libraries/Context":29,"../../libraries/actions/GroupAction":38,"../../libraries/actions/SelectAction":40,"../../libraries/math/Vector":45,"../../models/IOObject":48,"../../models/Wire":52,"../ICDesigner":2,"../Input":4,"../SelectionBox":7,"../TransformController":8,"../selectionpopup/SelectionPopup":22,"./Tool":26}],26:[function(require,module,exports){
+},{"../../libraries/Constants":29,"../../libraries/Context":30,"../../libraries/ObjectUtils":35,"../../libraries/actions/DeleteAction":40,"../../libraries/actions/GroupAction":41,"../../libraries/actions/SelectAction":44,"../../libraries/math/Vector":51,"../../models/IOObject":54,"../../models/Wire":58,"../../models/WirePort":59,"../ICDesigner":2,"../Input":3,"../SelectionBox":6,"../TransformController":7,"../selectionpopup/SelectionPopup":22,"./Tool":26}],26:[function(require,module,exports){
 var CurrentTool;
 function setCurrentTool(tool) {
     if (CurrentTool)
@@ -1899,6 +1905,108 @@ function getCurrentTool() {
 module.exports.setCurrent = setCurrentTool;
 module.exports.getCurrent = getCurrentTool;
 },{}],27:[function(require,module,exports){
+var WiringTool = (function() {
+    return {
+        isActive: false,
+        clickOPort: false,
+        wire: undefined,
+        activate: function(object, context) {
+            Tool.setCurrent(this);
+            
+            console.log(object);
+
+            this.wire = new Wire(context);
+            this.clickOPort = (object instanceof OPort);
+            var success;
+            if (this.clickOPort)
+                success = object.connect(this.wire);
+            else
+                success = this.wire.connect(object);
+            if (success) {
+                this.onMouseMove();
+                context.addWire(this.wire);
+            } else { // Illegal connection (ex. two inputs to IPort)
+                SelectionTool.activate();
+            }
+        },
+        deactivate: function() {
+            this.wire = undefined;
+        },
+        onKeyDown: function() {},
+        onKeyUp: function() {
+            if (code === ESC_KEY)  {
+                this.removeWire(getCurrentContext().getWires());
+                SelectionTool.activate();
+                render();
+            }
+        },
+        removeWire: function(wires) {
+            var j;
+            for (var j = 0; j < wires.length && wires[j] !== this.wire; j++);
+            wires.splice(j, 1);
+            if (this.clickOPort)
+                this.wire.input.disconnect(this.wire);
+            else
+                this.wire.disconnect();
+        },
+        onKeyDown: function() {},
+        onKeyUp: function() {},
+        onMouseDown: function() {},
+        onMouseMove: function() {
+            if (this.clickOPort)
+                this.wire.curve.update(this.wire.curve.p1, Input.getWorldMousePos(), this.wire.curve.c1, Input.getWorldMousePos());
+            else
+                this.wire.curve.update(Input.getWorldMousePos(), this.wire.curve.p2, Input.getWorldMousePos(), this.wire.curve.c2);
+            return true;
+        },
+        onMouseUp: function() {},
+        onClick: function() {
+            var objects       = getCurrentContext().getObjects();
+            var wires         = getCurrentContext().getWires();
+            var worldMousePos = Input.getWorldMousePos();
+
+            for (var i = 0; i < objects.length; i++) {
+                var ii = -1;
+                if (this.clickOPort && (ii = objects[i].iPortContains(worldMousePos)) !== -1) {
+                    if (!this.wire.connect(objects[i].inputs[ii]))
+                        this.removeWire(wires);
+                }
+                if (!this.clickOPort && (ii = objects[i].oPortContains(worldMousePos)) !== -1) {
+                    if (!objects[i].outputs[ii].connect(this.wire))
+                        this.removeWire(wires);
+                }
+                if (ii !== -1) {
+                    var action = new PlaceWireAction(this.wire);
+                    getCurrentContext().addAction(action);
+
+                    SelectionTool.activate();
+                    return true;
+                }
+             }
+
+            this.removeWire(wires);
+            SelectionTool.activate();
+            return true;
+        },
+        draw: function() {}
+    }
+})();
+
+module.exports = WiringTool;
+
+// Requirements
+var PlaceAction     = require("../../libraries/actions/PlaceAction");
+var PlaceWireAction = require("../../libraries/actions/PlaceWireAction");
+var Input           = require("../Input");
+var Tool            = require("./Tool");
+var SelectionTool   = require("./SelectionTool");
+var Wire            = require("../../models/Wire");
+var OPort           = require("../../models/OPort");
+
+var getCurrentContext = require("../../libraries/Context").getCurrentContext;
+var render            = require("../../views/Renderer").render;
+// 
+},{"../../libraries/Context":30,"../../libraries/actions/PlaceAction":42,"../../libraries/actions/PlaceWireAction":43,"../../models/OPort":57,"../../models/Wire":58,"../../views/Renderer":83,"../Input":3,"./SelectionTool":25,"./Tool":26}],28:[function(require,module,exports){
 class Camera {
     constructor(designer, startPos, startZoom) {
         this.canvas = designer.renderer.canvas;
@@ -1970,9 +2078,9 @@ var V         = require("./math/Vector").V;
 var Matrix2x3 = require("./math/Matrix");
 var Transform = require("./math/Transform");
 
-var TransformContains = require("./Utils").TransformContains;
+var TransformContains = require("./math/MathUtils").TransformContains;
 // 
-},{"./Utils":35,"./math/Matrix":43,"./math/Transform":44,"./math/Vector":45}],28:[function(require,module,exports){
+},{"./math/MathUtils":48,"./math/Matrix":49,"./math/Transform":50,"./math/Vector":51}],29:[function(require,module,exports){
 /* Should be const instead of var
    but Safari does not allow it */
 var DEFAULT_SIZE = 50;
@@ -2057,7 +2165,7 @@ module.exports.Y_KEY = Y_KEY;
 module.exports.Z_KEY = Z_KEY;
 module.exports.CONTROL_KEY = CONTROL_KEY;
 module.exports.COMMAND_KEY = COMMAND_KEY;
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 class Context {
     constructor(designer) {
         this.uidmanager = new UIDManager(this);
@@ -2199,10 +2307,8 @@ var UIDManager = require("./UIDManager");
 var Wire       = require("../models/Wire");
 
 var CopyArray       = require("./Utils").CopyArray;
-var FindObjectByUID = require("./Utils").FindObjectByUID;
-var FindWireByUID   = require("./Utils").FindWireByUID;
 // 
-},{"../models/Wire":52,"./UIDManager":34,"./Utils":35}],30:[function(require,module,exports){
+},{"../models/Wire":58,"./UIDManager":37,"./Utils":38}],31:[function(require,module,exports){
 function CopyGroup(objects) {
     if (objects.length === 0)
         return [];
@@ -2279,7 +2385,7 @@ module.exports.FindIPort = FindIPort;
 var Wire     = require("../models/Wire");
 var WirePort = require("../models/WirePort");
 // 
-},{"../models/Wire":52,"../models/WirePort":53}],31:[function(require,module,exports){
+},{"../models/Wire":58,"../models/WirePort":59}],32:[function(require,module,exports){
 var Y_KEY = require("./Constants").Y_KEY;
 var Z_KEY = require("./Constants").Z_KEY;
 
@@ -2356,7 +2462,7 @@ var GroupAction    = require("./actions/GroupAction");
 
 var render = require("../views/Renderer").render;
 // 
-},{"../controllers/Input":4,"../controllers/selectionpopup/SelectionPopup":22,"../views/Renderer":77,"./Constants":28,"./actions/GroupAction":38,"./actions/SelectAction":40}],32:[function(require,module,exports){
+},{"../controllers/Input":3,"../controllers/selectionpopup/SelectionPopup":22,"../views/Renderer":83,"./Constants":29,"./actions/GroupAction":41,"./actions/SelectAction":44}],33:[function(require,module,exports){
 var Images = [];
 Images.load = function(names, index, onFinish) {
     var img = new Image();
@@ -2373,7 +2479,199 @@ Images.load = function(names, index, onFinish) {
     img.src = "img/items/" + names[index];
 };
 module.exports = Images;
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
+function getChildNode(parent, name) {
+    for (var i = 0; i < parent.childNodes.length; i++) {
+        if (parent.childNodes[i].nodeName === name)
+            return parent.childNodes[i];
+    }
+    return undefined;
+}
+
+function getChildrenByTagName(parent, name) {
+    var children = [];
+    for (var i = 0; i < parent.childNodes.length; i++) {
+        if (parent.childNodes[i].nodeName === name)
+            children.push(parent.childNodes[i]);
+    }
+    return children;
+}
+
+function getBooleanValue(node, def) {
+    if (node == undefined)
+        return def;
+    return node.childNodes[0].nodeValue === "true" ? true : false;
+}
+
+function getIntValue(node, def) {
+    if (node == undefined)
+        return def;
+    return parseInt(node.childNodes[0].nodeValue);
+}
+
+function getFloatValue(node, def) {
+    if (node == undefined)
+        return def;
+    return parseFloat(node.childNodes[0].nodeValue);
+}
+
+function getStringValue(node, def) {
+    if (node == undefined)
+        return def;
+    return node.childNodes[0].nodeValue;
+}
+
+module.exports.getChildNode = getChildNode;
+module.exports.getChildrenByTagName = getChildrenByTagName;
+module.exports.getBooleanValue = getBooleanValue;
+module.exports.getIntValue = getIntValue;
+module.exports.getFloatValue = getFloatValue;
+module.exports.getStringValue = getStringValue;
+},{}],35:[function(require,module,exports){
+// Okay, I know this is awful but it's like 5:47 am and I'm tired
+
+/**
+ * [GetAllThingsBetween description]
+ * @param       {[type]} things [description]
+ * @constructor
+ */
+function GetAllThingsBetween(things) {
+    var objects = [];
+    var wiresAndPorts = [];
+    for (var i = 0; i < things.length; i++) {
+        if (things[i] instanceof Wire || things[i] instanceof WirePort)
+            wiresAndPorts.push(things[i]);
+        else if (things[i] instanceof IOObject)
+            objects.push(things[i]);
+    }
+    var allTheThings = [];
+    for (var i = 0; i < objects.length; i++) {
+        allTheThings.push(objects[i]);
+        for (var j = 0; j < objects[i].inputs.length; j++) {
+            var iport = objects[i].inputs[j];
+            obj = iport.input;
+            while (obj != undefined && !(obj instanceof OPort)) {
+                if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
+                    allTheThings.push(obj);
+                obj = obj.input;
+            }
+        }
+        for (var j = 0; j < objects[i].outputs.length; j++) {
+            var oport = objects[i].outputs[j];
+            for (var k = 0; k < oport.connections.length; k++) {
+                obj = oport.connections[k];
+                while (obj != undefined && !(obj instanceof IPort)) {
+                    if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
+                        allTheThings.push(obj);
+                    obj = obj.connection;
+                }
+            }
+        }
+    }
+    for (var i = 0; i < wiresAndPorts.length; i++) {
+        allTheThings.push(wiresAndPorts[i]);
+        var obj = wiresAndPorts[i].input;
+        while (obj != undefined && !(obj instanceof OPort)) {
+            if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
+                allTheThings.push(obj);
+            obj = obj.input;
+        }
+        obj = wiresAndPorts[i].connection;
+        while (obj != undefined && !(obj instanceof IPort)) {
+            if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
+                allTheThings.push(obj);
+            obj = obj.connection;
+        }
+    }
+    return allTheThings;
+}
+
+/**
+ * Finds and returns all the inter-connected wires
+ * in a given group of objects
+ *
+ * @param  {Array} objects
+ *         The group of objects to find the wires
+ *         in between
+ *
+ * @return {Array}
+ *         The resulting wires
+ */
+function GetAllWires(objects) {
+    var wires = [];
+    for (var i = 0; i < objects.length; i++) {
+        var obj = objects[i];
+        for (var j = 0; j < obj.outputs.length; j++) {
+            var connections = obj.outputs[j].connections;
+            for (var k = 0; k < connections.length; k++) {
+                var wire = connections[k];
+                while (wire.connection instanceof WirePort) {
+                    wires.push(wire);
+                    wire = wire.connection.connection;
+                }
+                wires.push(wire);
+            }
+        }
+    }
+    return wires;
+}
+
+// Separates an array of objects into three sub-groups
+// of input-type objects (switch and buttons),
+// output-type objects (LEDs),
+// and other components.
+function SeparateGroup(group) {
+    var inputs = [];
+    var components = [];
+    var outputs = [];
+    for (var i = 0; i < group.length; i++) {
+        var object = group[i];
+        if (object instanceof Switch || object instanceof Button || object instanceof Clock)
+            inputs.push(object);
+        else if (object instanceof LED)
+            outputs.push(object);
+        else
+            components.push(object);
+    }
+    return {inputs:inputs, components:components, outputs:outputs};
+}
+
+/**
+ * Finds and returns the IC from a given icuid
+ *
+ * @param  {Integer} id
+ *         The icuid of the target IC
+ *         (Integrated Circuit Unique Identification)
+ *
+ * @return {IC}
+ *         The ic with the given icuid or undefined if
+ *         the IC is not found
+ */
+function FindIC(id, ics) {
+    for (var i = 0; i < ics.length; i++) {
+        if (ics[i].icuid === id)
+            return ics[i];
+    }
+    return undefined;
+}
+
+module.exports.GetAllThingsBetween = GetAllThingsBetween;
+module.exports.GetAllWires = GetAllWires;
+module.exports.FindIC = FindIC;
+module.exports.SeparateGroup = SeparateGroup;
+
+// Requirements
+var IOObject = require("../models/IOObject");
+var Wire     = require("../models/Wire");
+var WirePort = require("../models/WirePort");
+var IPort    = require("../models/IPort");
+var OPort    = require("../models/OPort");
+var Switch   = require("../models/ioobjects/inputs/Switch");
+var Button   = require("../models/ioobjects/inputs/Button");
+var Clock    = require("../models/ioobjects/inputs/Clock");
+var LED      = require("../models/ioobjects/outputs/LED");
+// 
+},{"../models/IOObject":54,"../models/IPort":56,"../models/OPort":57,"../models/Wire":58,"../models/WirePort":59,"../models/ioobjects/inputs/Button":66,"../models/ioobjects/inputs/Clock":67,"../models/ioobjects/inputs/Switch":71,"../models/ioobjects/outputs/LED":80}],36:[function(require,module,exports){
 var PROPAGATION_TIME = require("./Constants").PROPAGATION_TIME;
 
 var updateRequests = 0;
@@ -2395,7 +2693,7 @@ class Propagation {
 
 module.exports = Propagation;
 
-},{"./Constants":28}],34:[function(require,module,exports){
+},{"./Constants":29}],37:[function(require,module,exports){
 class UIDManager {
     constructor(context) {
         this.context = context;
@@ -2436,368 +2734,7 @@ UIDManager.find = function(things, target) {
 }
 
 module.exports = UIDManager;
-},{}],35:[function(require,module,exports){
-
-/**
- * Determines whether the given point is
- * within the rectangle defined by the
- * given transform
- *
- * @param  {Transform} transform
- *         The transform that represents the rectangle
- *
- * @param  {Vector} pos
- *         * Must be in world coordinates *
- *         The point to determine whether or not
- *         it's within the rectangle
- *
- * @return {Boolean}
- *         True if the point is within the rectangle,
- *         false otherwise
- */
-var RectContains = (function() {
-	return function(transform, pos) {
-        var tr = transform.size.scale(0.5);
-        var bl = transform.size.scale(-0.5);
-        var p  = transform.toLocalSpace(pos);
-
-        return (p.x > bl.x &&
-                p.y > bl.y &&
-                p.x < tr.x &&
-                p.y < tr.y);
-	}
-})();
-
-/**
- * Determines whether the given point
- * is within the circle defined by the
- * given transform
- *
- * @param  {Transform} transform
- *         The transform that represents the circle
- *
- * @param  {Vector} pos
- *         * Must be in world coordinates *
- *         The point to determine whether or not
- *         it's within the rectangle
- *
- * @return {Boolean}
- *          True if the point is within the rectangle,
- *          false otherwise
- */
-var CircleContains = (function() {
-	return function(transform, pos) {
-        var v = transform.toLocalSpace(pos);
-        return (v.len2() <= transform.size.x*transform.size.x/4);
-	}
-})();
-
-/**
- * Compares two transforms to see if they overlap.
- * First tests it using a quick circle-circle
- * intersection using the 'radius' of the transform
- *
- * Then uses a SAT (Separating Axis Theorem) method
- * to determine whether or not the two transforms
- * are intersecting
- *
- * @param  {Transform} a
- *         The first transform
- *
- * @param  {Transform} b
- *         The second transform
- *
- * @return {Boolean}
- *         True if the two transforms are overlapping,
- *         false otherwise
- */
-var TransformContains = (function() {
-	return function(A, B) {
-        // If both transforms are non-rotated
-        if (Math.abs(A.getAngle()) <= 1e-5 && Math.abs(B.getAngle()) <= 1e-5) {
-            var aPos = A.getPos(), aSize = A.getSize();
-            var bPos = B.getPos(), bSize = B.getSize();
-            return (Math.abs(aPos.x - bPos.x) * 2 < (aSize.x + bSize.x)) &&
-                   (Math.abs(aPos.y - bPos.y) * 2 < (aSize.y + bSize.y));
-        }
-
-        // Quick check circle-circle intersection
-        var r1 = A.getRadius();
-        var r2 = B.getRadius();
-        var sr = r1 + r2;                       // Sum of radius
-        var dpos = A.getPos().sub(B.getPos());  // Delta position
-        if (dpos.dot(dpos) > sr*sr)
-            return false;
-
-        /* Perform SAT */
-
-        // Get corners in local space of transform A
-        var a = A.getLocalCorners();
-
-        // Transform B's corners into A local space
-        var bworld = B.getCorners();
-        var b = [];
-        for (var i = 0; i < 4; i++) {
-            b[i] = A.toLocalSpace(bworld[i]);
-
-            // Offsets x and y to fix perfect lines
-            // where b[0] = b[1] & b[2] = b[3]
-            b[i].x += 0.0001*i;
-            b[i].y += 0.0001*i;
-        }
-
-        var corners = a.concat(b);
-
-        var minA, maxA, minB, maxB;
-
-        // SAT w/ x-axis
-        // Axis is <1, 0>
-        // So dot product is just the x-value
-        minA = maxA = corners[0].x;
-        minB = maxB = corners[4].x;
-        for (var j = 1; j < 4; j++) {
-            minA = Math.min(corners[j].x, minA);
-            maxA = Math.max(corners[j].x, maxA);
-            minB = Math.min(corners[j+4].x, minB);
-            maxB = Math.max(corners[j+4].x, maxB);
-        }
-        if (maxA < minB || maxB < minA)
-            return false;
-
-        // SAT w/ y-axis
-        // Axis is <1, 0>
-        // So dot product is just the y-value
-        minA = maxA = corners[0].y;
-        minB = maxB = corners[4].y;
-        for (var j = 1; j < 4; j++) {
-            minA = Math.min(corners[j].y, minA);
-            maxA = Math.max(corners[j].y, maxA);
-            minB = Math.min(corners[j+4].y, minB);
-            maxB = Math.max(corners[j+4].y, maxB);
-        }
-        if (maxA < minB || maxB < minA)
-            return false;
-
-        // SAT w/ other two axes
-        var normals = [b[3].sub(b[0]), b[3].sub(b[2])];
-        for (var i = 0; i < normals.length; i++) {
-            var normal = normals[i];
-            var minA = undefined, maxA = undefined;
-            var minB = undefined, maxB = undefined;
-            for (var j = 0; j < 4; j++) {
-                var s = corners[j].dot(normal);
-                minA = Math.min(s, (minA ? minA :  Infinity));
-                maxA = Math.max(s, (maxA ? maxA : -Infinity));
-                var s2 = corners[j+4].dot(normal);
-                minB = Math.min(s2, (minB ? minB :  Infinity));
-                maxB = Math.max(s2, (maxB ? maxB : -Infinity));
-            }
-            if (maxA < minB || maxB < minA)
-                return false;
-        }
-
-        return true;
-	}
-})();
-
-/**
- * Returns the nearest point on the edge
- * of the given rectangle.
- *
- * @param  {Vector} bl
- *         Bottom left corner of the rectangle
- *
- * @param  {Vector} tr
- *         Top right corner of the rectangle
- *
- * @param  {Vector} pos
- *         The position to get the nearest point on
- *
- * @return {Vector}
- *         The closest position on the edge of
- *         the rectangle from 'pos'
- */
-var GetNearestPointOnRect = (function() {
-    var V = require("./math/Vector").V;
-    
-	return function(bl, tr, pos) {
-        if (pos.x < bl.x)
-            return V(bl.x, Clamp(pos.y, bl.y, tr.y));
-        if (pos.x > tr.x)
-            return V(tr.x, Clamp(pos.y, bl.y, tr.y));
-        if (pos.y < bl.y)
-            return V(Clamp(pos.x, bl.x, tr.x), bl.y);
-        if (pos.y > tr.y)
-            return V(Clamp(pos.x, bl.x, tr.x), tr.y);
-        return V(0, 0);
-	}
-})();
-
-// Okay, I know this is awful but it's like 5:47 am and I'm tired
-
-/**
- * [GetAllThingsBetween description]
- * @param       {[type]} things [description]
- * @constructor
- */
-var GetAllThingsBetween = (function() {
-    var IOObject, Wire, WirePort, IPort, OPort;
-    
-	return function(things) {
-        if (!Wire) {
-            IOObject = require("../models/IOObject");
-            Wire     = require("../models/Wire");
-            WirePort = require("../models/WirePort");
-            IPort    = require("../models/IPort");
-            OPort    = require("../models/OPort");
-        }
-        
-        var objects = [];
-        var wiresAndPorts = [];
-        for (var i = 0; i < things.length; i++) {
-            if (things[i] instanceof Wire || things[i] instanceof WirePort)
-                wiresAndPorts.push(things[i]);
-            else if (things[i] instanceof IOObject)
-                objects.push(things[i]);
-        }
-        var allTheThings = [];
-        for (var i = 0; i < objects.length; i++) {
-            allTheThings.push(objects[i]);
-            for (var j = 0; j < objects[i].inputs.length; j++) {
-                var iport = objects[i].inputs[j];
-                obj = iport.input;
-                while (obj != undefined && !(obj instanceof OPort)) {
-                    if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
-                        allTheThings.push(obj);
-                    obj = obj.input;
-                }
-            }
-            for (var j = 0; j < objects[i].outputs.length; j++) {
-                var oport = objects[i].outputs[j];
-                for (var k = 0; k < oport.connections.length; k++) {
-                    obj = oport.connections[k];
-                    while (obj != undefined && !(obj instanceof IPort)) {
-                        if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
-                            allTheThings.push(obj);
-                        obj = obj.connection;
-                    }
-                }
-            }
-        }
-        for (var i = 0; i < wiresAndPorts.length; i++) {
-            allTheThings.push(wiresAndPorts[i]);
-            var obj = wiresAndPorts[i].input;
-            while (obj != undefined && !(obj instanceof OPort)) {
-                if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
-                    allTheThings.push(obj);
-                obj = obj.input;
-            }
-            obj = wiresAndPorts[i].connection;
-            while (obj != undefined && !(obj instanceof IPort)) {
-                if (FindByUID(allTheThings, obj.uid) == undefined) // If not added yet
-                    allTheThings.push(obj);
-                obj = obj.connection;
-            }
-        }
-        return allTheThings;
-	}
-})();
-
-/**
- * Finds and returns all the inter-connected wires
- * in a given group of objects
- *
- * @param  {Array} objects
- *         The group of objects to find the wires
- *         in between
- *
- * @return {Array}
- *         The resulting wires
- */
-var GetAllWires = (function() {
-    var WirePort;
-    
-	return function(objects) {
-        if (!WirePort) {
-            WirePort = require("../models/WirePort");
-        }
-        
-        var wires = [];
-        for (var i = 0; i < objects.length; i++) {
-            var obj = objects[i];
-            for (var j = 0; j < obj.outputs.length; j++) {
-                var connections = obj.outputs[j].connections;
-                for (var k = 0; k < connections.length; k++) {
-                    var wire = connections[k];
-                    while (wire.connection instanceof WirePort) {
-                        wires.push(wire);
-                        wire = wire.connection.connection;
-                    }
-                    wires.push(wire);
-                }
-            }
-        }
-        return wires;
-	}
-})();
-
-/**
- * Removes all objects and wires+wireports
- * between them
- * 
- * @param  {Context} ctx
- *         The context which the objects are apart of
- *         
- * @param  {Array} objects
- *         The array of objects in which to remove
- *         
- * @param  {Boolean} doAction
- *         True if the action should be re/undoable,
- *         False otherwise
- */
-var RemoveObjects = (function() {
-    var SelectionTool, GroupAction, DeleteAction, Wire, WirePort, render;
-
-	return function(ctx, objects, doAction) {
-        if (!GroupAction) {
-            SelectionTool = require("../controllers/tools/SelectionTool");
-            GroupAction   = require("./actions/GroupAction");
-            DeleteAction  = require("./actions/DeleteAction");
-            Wire          = require("../models/Wire");
-            WirePort      = require("../models/WirePort");
-            
-            render = require("../views/Renderer").render;
-        }
-        
-        if (objects.length === 0)
-            return;
-            
-        var action = new GroupAction();
-        var things = GetAllThingsBetween(objects);
-        for (var i = 0; i < things.length; i++) {
-            if (things[i].selected)
-                SelectionTool.deselect([things[i]]);
-            if (things[i] instanceof Wire || things[i] instanceof WirePort) {
-                var oldinput = things[i].input;
-                var oldconnection = things[i].connection;
-                things[i].remove();
-                if (doAction)
-                    action.add(new DeleteAction(things[i], oldinput, oldconnection));
-            }
-        }
-        for (var i = 0; i < things.length; i++) {
-            if (!(things[i] instanceof Wire || things[i] instanceof WirePort)) {
-                things[i].remove();
-                if (doAction)
-                    action.add(new DeleteAction(things[i]));
-            }
-        }
-        if (doAction)
-            ctx.addAction(action);
-        render();
-	}
-})();
-
+},{}],38:[function(require,module,exports){
 /**
  * Simply copies all elements of an array into
  * another array and returns that array
@@ -2809,269 +2746,38 @@ var RemoveObjects = (function() {
  * @return {Array}
  *         The copied array
  */
-var CopyArray = (function() {
-	return function(arr) {
-        var copy = [];
-        for (var i = 0; i < arr.length; i++)
-            copy.push(arr[i]);
-        return copy;
-	}
-})();
-
-/**
- * Finds and returns the IC from a given icuid
- *
- * @param  {Integer} id
- *         The icuid of the target IC
- *         (Integrated Circuit Unique Identification)
- *
- * @return {IC}
- *         The ic with the given icuid or undefined if
- *         the IC is not found
- */
-var FindIC = (function() {
-	return function(id, ics) {
-        for (var i = 0; i < ics.length; i++) {
-            if (ics[i].icuid === id)
-                return ics[i];
-        }
-        return undefined;
-	}
-})();
-
-/**
- * [FindByUID description]
- * @param       {[type]} objects [description]
- * @param       {[type]} id      [description]
- * @constructor
- */
-var FindByUID = (function() {
-	return function(objects, id) {
-        for (var i = 0; i < objects.length; i++) {
-            if (objects[i].uid === id)
-                return objects[i];
-        }
-        return undefined;
-	}
-})();
-
-/**
- * Creates a group transform action given
- * the relevant objects and their original
- * transforms
- * 
- * @param  {Array} objects
- *         The array of objects who have been transformed
- * 
- * @param  {Array} t0
- *         The array of transforms that correspond to
- *         the original transform of the object in objects
- */
-var CreateTransformAction = (function() {
-    var GroupAction, TransformAction;
-    
-	return function(objects, t0) {
-        if (!GroupAction) {
-            GroupAction     = require("./actions/GroupAction");
-            TransformAction = require("./actions/TransformAction");
-        }
-        
-        var action = new GroupAction();
-        for (var i = 0; i < objects.length; i++) {
-            var origin = t0[i];
-            var target = objects[i].transform.copy();
-            if (origin.equals(target))
-                continue;
-            action.add(new TransformAction(objects[i], origin, target));
-        }
-        return action;
-	}
-})();
-
-/**
- * Finds and returns the closest 't' value
- * of the parametric equation for a line.
- *
- * Parametric function defined by
- * X(t) = t(p2.x - p1.x) + p1.x
- * Y(t) = t(p2.y - p1.y) + p1.y
- *
- * Solves for 't' from root of the derivative of
- * the distance function between the line and <mx, my>
- * D(t) = sqrt((X(t) - mx)^2 + (Y(t) - my)^2)
- *
- * @param  {Vector} p1
- *         The first point of the line
- *
- * @param  {Vector} p2
- *         The second point of the line
- *
- * @param  {Number} mx
- *         The x-value of the point
- *         to determine the 't' value
- *
- * @param  {Number} my
- *         The y-value of the point
- *         to determine the 't' value
- *
- * @return {Number}
- *         The nearest 't' value of <mx, my>
- *         on the line p1->p2 or -1 if the
- *         dist < WIRE_DIST_THRESHOLD
- */
-var GetNearestT = (function() {
-    var WIRE_DIST_THRESHOLD2 = require("./Constants").WIRE_DIST_THRESHOLD2;
-    
-	return function(p1, p2, mx, my) {
-        var dx = p2.x - p1.x;
-        var dy = p2.y - p1.y;
-        var t = (dx*(mx - p1.x) + dy*(my - p1.y))/(dx*dx + dy*dy);
-        t = Clamp(t, 0, 1);
-        var pos = V(dx * t + p1.x, dy * t + p1.y);
-        if (pos.sub(V(mx, my)).len2() < WIRE_DIST_THRESHOLD2)
-            return t;
-        else
-            return -1;
-	}
-})();
-
-/**
- * Uses Newton's method to find the roots of
- * the function 'f' given a derivative 'df'
- *
- * @param  {Number} iterations
- *         The number of iterations to perform
- *         Newton's method with; the smaller
- *         the better but less accurate
- *
- * @param  {Number} t0
- *         The starting root value parameter
- *
- * @param  {Number} x
- *         Parameter 1 for the function
- *
- * @param  {Number} y
- *         Parameter 2 for the function
- *
- * @param  {Function} f
- *         The function to find the roots of
- *         In the form f(t, x, y) = ...
- *
- * @param  {Function} df
- *         The derivative of the function
- *         In the form of df(t, x, y)
- *
- * @return {Number}
- *         The parameter 't' that results in
- *         f(t, x, y) = 0
- */
-var FindRoots = (function() {
-	return function(iterations, t0, x, y, f, df) {
-        var t = t0;
-        do {
-            var v = f(t, x, y);
-            var dv = df(t, x, y);
-            if (dv === 0)
-                break;
-            t = t - v / dv;
-            t = Clamp(t, 0.01, 0.99);
-        } while((iterations--) > 0);
-        return t;
-	}
-})();
-
-// Separates an array of objects into three sub-groups
-// of input-type objects (switch and buttons),
-// output-type objects (LEDs),
-// and other components.
-var SeparateGroup = (function() {
-    var Switch, Button, Clock, LED;
-	return function(group) {
-        if (!Switch) {
-            Switch = require("../models/ioobjects/inputs/Switch");
-            Button = require("../models/ioobjects/inputs/Button");
-            Clock  = require("../models/ioobjects/inputs/Clock");
-            LED    = require("../models/ioobjects/outputs/LED");
-        }
-        
-        var inputs = [];
-        var components = [];
-        var outputs = [];
-        for (var i = 0; i < group.length; i++) {
-            var object = group[i];
-            if (object instanceof Switch || object instanceof Button || object instanceof Clock)
-                inputs.push(object);
-            else if (object instanceof LED)
-                outputs.push(object);
-            else
-                components.push(object);
-        }
-        return {inputs:inputs, components:components, outputs:outputs};
-	}
-})();
-
-/**
- * Clamps a number between a given min and max
- *
- * @param  {Number} x
- *         The number to Clamp
- *
- * @param  {Number} min
- *         The minimum
- *
- * @param  {Number} max
- *         The maximum
- *
- * @return {Number}
- *         The Clamped number
- */
-var Clamp = (function() {
-	return function(x, min, max) {
-        return Math.min(Math.max(x, min), max);
-	}
-})();
+function CopyArray(arr) {
+    var copy = [];
+    for (var i = 0; i < arr.length; i++)
+        copy.push(arr[i]);
+    return copy;
+}
 
 // Code from https://stackoverflow.com/questions/5916900/how-can-you-detect-the-version-of-a-browser
-var GetBrowser = (function() {
-    return function() {
-        if (navigator == undefined)
-            return;
-        var ua=navigator.userAgent,tem,M=ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
-        if(/trident/i.test(M[1])) {
-            tem=/\brv[ :]+(\d+)/g.exec(ua) || [];
-            return {name:'IE',version:(tem[1]||'')};
-        }
-        if(M[1]==='Chrome') {
-            tem=ua.match(/\bOPR|Edge\/(\d+)/)
-            if(tem!=null)   {return {name:'Opera', version:tem[1]};}
-        }
-        M=M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
-        if((tem=ua.match(/version\/(\d+)/i))!=null) {M.splice(1,1,tem[1]);}
-        return {
-          name: M[0],
-          version: M[1]
-        };
+function GetBrowser() {
+    if (navigator == undefined)
+        return;
+    var ua=navigator.userAgent,tem,M=ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+    if(/trident/i.test(M[1])) {
+        tem=/\brv[ :]+(\d+)/g.exec(ua) || [];
+        return {name:'IE',version:(tem[1]||'')};
     }
-})();
+    if(M[1]==='Chrome') {
+        tem=ua.match(/\bOPR|Edge\/(\d+)/)
+        if(tem!=null)   {return {name:'Opera', version:tem[1]};}
+    }
+    M=M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+    if((tem=ua.match(/version\/(\d+)/i))!=null) {M.splice(1,1,tem[1]);}
+    return {
+      name: M[0],
+      version: M[1]
+    };
+}
 
-module.exports.RectContains = RectContains;
-module.exports.CircleContains = CircleContains;
-module.exports.TransformContains = TransformContains;
-module.exports.GetNearestPointOnRect = GetNearestPointOnRect;
-module.exports.GetAllThingsBetween = GetAllThingsBetween;
-module.exports.GetAllWires = GetAllWires;
-module.exports.RemoveObjects = RemoveObjects;
 module.exports.CopyArray = CopyArray;
-module.exports.FindIC = FindIC;
-module.exports.FindByUID = FindByUID;
-module.exports.CreateTransformAction = CreateTransformAction;
-module.exports.GetNearestT = GetNearestT;
-module.exports.FindRoots = FindRoots;
-module.exports.SeparateGroup = SeparateGroup;
-module.exports.Clamp = Clamp;
 module.exports.GetBrowser = GetBrowser;
 
-},{"../controllers/tools/SelectionTool":25,"../models/IOObject":48,"../models/IPort":50,"../models/OPort":51,"../models/Wire":52,"../models/WirePort":53,"../models/ioobjects/inputs/Button":60,"../models/ioobjects/inputs/Clock":61,"../models/ioobjects/inputs/Switch":65,"../models/ioobjects/outputs/LED":74,"../views/Renderer":77,"./Constants":28,"./actions/DeleteAction":37,"./actions/GroupAction":38,"./actions/TransformAction":41,"./math/Vector":45}],36:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 class Action {
     constructor() {
         this.context = getCurrentContext();
@@ -3090,7 +2796,7 @@ module.exports = Action;
 var getCurrentContext = require("../Context").getCurrentContext;
 var setSaved          = require("../Context").setSaved;
 // 
-},{"../Context":29}],37:[function(require,module,exports){
+},{"../Context":30}],40:[function(require,module,exports){
 var Action = require("./Action");
 
 class DeleteAction extends Action {
@@ -3113,7 +2819,7 @@ class DeleteAction extends Action {
 }
 
 module.exports = Action;
-},{"./Action":36}],38:[function(require,module,exports){
+},{"./Action":39}],41:[function(require,module,exports){
 var Action = require("./Action");
 
 class GroupAction extends Action {
@@ -3135,7 +2841,7 @@ class GroupAction extends Action {
 }
 
 module.exports = GroupAction;
-},{"./Action":36}],39:[function(require,module,exports){
+},{"./Action":39}],42:[function(require,module,exports){
 var Action = require("./Action");
 
 class PlaceAction extends Action {
@@ -3152,7 +2858,35 @@ class PlaceAction extends Action {
 }
 
 module.exports = PlaceAction;
-},{"./Action":36}],40:[function(require,module,exports){
+},{"./Action":39}],43:[function(require,module,exports){
+var Action = require("./Action");
+
+class PlaceWireAction extends Action {
+    constructor(wire) {
+        super();
+        this.wire = wire;
+        this.input = undefined;
+        this.connection = undefined;
+    }
+    undo() {
+        if (this.input == undefined)
+            this.input = this.wire.input;
+        if (this.connection == undefined)
+            this.connection = this.wire.connection;
+        var index = this.context.getIndexOf(this.wire);
+        this.context.getWires().splice(index, 1);
+        this.wire.disconnect(this.wire.connection);
+        this.wire.input.disconnect(this.wire);
+    }
+    redo() {
+        this.context.getWires().push(this.wire);
+        this.wire.connect(this.connection);
+        this.input.connect(this.wire);
+    }
+}
+
+module.exports = PlaceWireAction;
+},{"./Action":39}],44:[function(require,module,exports){
 var Action = require("./Action");
 
 class SelectAction extends Action {
@@ -3186,7 +2920,35 @@ module.exports = SelectAction;
 // Requirements
 var SelectionTool = require("../../controllers/tools/SelectionTool");
 // 
-},{"../../controllers/tools/SelectionTool":25,"./Action":36}],41:[function(require,module,exports){
+},{"../../controllers/tools/SelectionTool":25,"./Action":39}],45:[function(require,module,exports){
+var Action = require("./Action");
+
+class SplitWireAction extends Action {
+    constructor(wire) {
+        super();
+        this.wireport = wire.connection;
+        this.wire = wire;
+        this.newwire = this.wireport.connection;
+        this.connection = this.newwire.connection;
+    }
+    undo() {
+        this.context.remove(this.wireport);
+        this.context.remove(this.newwire);
+        this.wire.disconnect(this.wireport);
+        this.newwire.disconnect(this.connection);
+        this.wire.connect(this.connection);
+    }
+    redo() {
+        this.context.addObject(this.wireport);
+        this.context.addWire(this.newwire);
+        this.wire.disconnect(this.connection);
+        this.wire.connect(this.wireport);
+        this.newwire.connect(this.connection);
+    }
+}
+
+module.exports = SplitWireAction;
+},{"./Action":39}],46:[function(require,module,exports){
 var Action = require("./Action");
 
 class TransformAction extends Action {
@@ -3215,13 +2977,14 @@ class TransformAction extends Action {
 module.exports = TransformAction;
 
 // Requirements
+var GroupAction    = require("./GroupAction");
 var SelectionTool  = require("../../controllers/tools/SelectionTool");
 var SelectionPopup = require("../../controllers/selectionpopup/SelectionPopup");
 // 
-},{"../../controllers/selectionpopup/SelectionPopup":22,"../../controllers/tools/SelectionTool":25,"./Action":36}],42:[function(require,module,exports){
+},{"../../controllers/selectionpopup/SelectionPopup":22,"../../controllers/tools/SelectionTool":25,"./Action":39,"./GroupAction":41}],47:[function(require,module,exports){
 var WIRE_DIST_ITERATIONS   = require("../Constants").WIRE_DIST_ITERATIONS;
 var WIRE_NEWTON_ITERATIONS = require("../Constants").WIRE_NEWTON_ITERATIONS;
-var WIRE_DIST_THRESHOLD2   = require("../Utils").WIRE_DIST_THRESHOLD2;
+var WIRE_DIST_THRESHOLD2   = require("../Constants").WIRE_DIST_THRESHOLD2;
 
 class BezierCurve {
     constructor(p1, p2, c1, c2) {
@@ -3403,15 +3166,317 @@ module.exports = BezierCurve;
 var V                 = require("./Vector").V;
 var Transform         = require("./Transform");
 
-var Clamp             = require("../Utils").Clamp;
-var FindRoots         = require("../Utils").FindRoots;
+var Clamp             = require("./MathUtils").Clamp;
+var FindRoots         = require("./MathUtils").FindRoots;
 var getCurrentContext = require("../Context").getCurrentContext;
-var getChildNode      = require("../../controllers/Importer").getChildNode;
-var getFloatValue     = require("../../controllers/Importer").getFloatValue;
+var getChildNode      = require("../ImportUtils").getChildNode;
+var getFloatValue     = require("../ImportUtils").getFloatValue;
 var createChildNode   = require("../../controllers/Exporter").createChildNode;
 var createTextElement = require("../../controllers/Exporter").createTextElement;
 // 
-},{"../../controllers/Exporter":1,"../../controllers/Importer":3,"../Constants":28,"../Context":29,"../Utils":35,"./Transform":44,"./Vector":45}],43:[function(require,module,exports){
+},{"../../controllers/Exporter":1,"../Constants":29,"../Context":30,"../ImportUtils":34,"./MathUtils":48,"./Transform":50,"./Vector":51}],48:[function(require,module,exports){
+var WIRE_DIST_THRESHOLD2 = require("../Constants").WIRE_DIST_THRESHOLD2;
+
+var V = require("./Vector").V;
+
+/**
+ * Determines whether the given point is
+ * within the rectangle defined by the
+ * given transform
+ *
+ * @param  {Transform} transform
+ *         The transform that represents the rectangle
+ *
+ * @param  {Vector} pos
+ *         * Must be in world coordinates *
+ *         The point to determine whether or not
+ *         it's within the rectangle
+ *
+ * @return {Boolean}
+ *         True if the point is within the rectangle,
+ *         false otherwise
+ */
+function RectContains(transform, pos) {
+    var tr = transform.size.scale(0.5);
+    var bl = transform.size.scale(-0.5);
+    var p  = transform.toLocalSpace(pos);
+
+    return (p.x > bl.x &&
+            p.y > bl.y &&
+            p.x < tr.x &&
+            p.y < tr.y);
+}
+
+/**
+ * Determines whether the given point
+ * is within the circle defined by the
+ * given transform
+ *
+ * @param  {Transform} transform
+ *         The transform that represents the circle
+ *
+ * @param  {Vector} pos
+ *         * Must be in world coordinates *
+ *         The point to determine whether or not
+ *         it's within the rectangle
+ *
+ * @return {Boolean}
+ *          True if the point is within the rectangle,
+ *          false otherwise
+ */
+function CircleContains(transform, pos) {
+    var v = transform.toLocalSpace(pos);
+    return (v.len2() <= transform.size.x*transform.size.x/4);
+}
+
+/**
+ * Compares two transforms to see if they overlap.
+ * First tests it using a quick circle-circle
+ * intersection using the 'radius' of the transform
+ *
+ * Then uses a SAT (Separating Axis Theorem) method
+ * to determine whether or not the two transforms
+ * are intersecting
+ *
+ * @param  {Transform} a
+ *         The first transform
+ *
+ * @param  {Transform} b
+ *         The second transform
+ *
+ * @return {Boolean}
+ *         True if the two transforms are overlapping,
+ *         false otherwise
+ */
+function TransformContains(A, B) {
+    // If both transforms are non-rotated
+    if (Math.abs(A.getAngle()) <= 1e-5 && Math.abs(B.getAngle()) <= 1e-5) {
+        var aPos = A.getPos(), aSize = A.getSize();
+        var bPos = B.getPos(), bSize = B.getSize();
+        return (Math.abs(aPos.x - bPos.x) * 2 < (aSize.x + bSize.x)) &&
+               (Math.abs(aPos.y - bPos.y) * 2 < (aSize.y + bSize.y));
+    }
+
+    // Quick check circle-circle intersection
+    var r1 = A.getRadius();
+    var r2 = B.getRadius();
+    var sr = r1 + r2;                       // Sum of radius
+    var dpos = A.getPos().sub(B.getPos());  // Delta position
+    if (dpos.dot(dpos) > sr*sr)
+        return false;
+
+    /* Perform SAT */
+
+    // Get corners in local space of transform A
+    var a = A.getLocalCorners();
+
+    // Transform B's corners into A local space
+    var bworld = B.getCorners();
+    var b = [];
+    for (var i = 0; i < 4; i++) {
+        b[i] = A.toLocalSpace(bworld[i]);
+
+        // Offsets x and y to fix perfect lines
+        // where b[0] = b[1] & b[2] = b[3]
+        b[i].x += 0.0001*i;
+        b[i].y += 0.0001*i;
+    }
+
+    var corners = a.concat(b);
+
+    var minA, maxA, minB, maxB;
+
+    // SAT w/ x-axis
+    // Axis is <1, 0>
+    // So dot product is just the x-value
+    minA = maxA = corners[0].x;
+    minB = maxB = corners[4].x;
+    for (var j = 1; j < 4; j++) {
+        minA = Math.min(corners[j].x, minA);
+        maxA = Math.max(corners[j].x, maxA);
+        minB = Math.min(corners[j+4].x, minB);
+        maxB = Math.max(corners[j+4].x, maxB);
+    }
+    if (maxA < minB || maxB < minA)
+        return false;
+
+    // SAT w/ y-axis
+    // Axis is <1, 0>
+    // So dot product is just the y-value
+    minA = maxA = corners[0].y;
+    minB = maxB = corners[4].y;
+    for (var j = 1; j < 4; j++) {
+        minA = Math.min(corners[j].y, minA);
+        maxA = Math.max(corners[j].y, maxA);
+        minB = Math.min(corners[j+4].y, minB);
+        maxB = Math.max(corners[j+4].y, maxB);
+    }
+    if (maxA < minB || maxB < minA)
+        return false;
+
+    // SAT w/ other two axes
+    var normals = [b[3].sub(b[0]), b[3].sub(b[2])];
+    for (var i = 0; i < normals.length; i++) {
+        var normal = normals[i];
+        var minA = undefined, maxA = undefined;
+        var minB = undefined, maxB = undefined;
+        for (var j = 0; j < 4; j++) {
+            var s = corners[j].dot(normal);
+            minA = Math.min(s, (minA ? minA :  Infinity));
+            maxA = Math.max(s, (maxA ? maxA : -Infinity));
+            var s2 = corners[j+4].dot(normal);
+            minB = Math.min(s2, (minB ? minB :  Infinity));
+            maxB = Math.max(s2, (maxB ? maxB : -Infinity));
+        }
+        if (maxA < minB || maxB < minA)
+            return false;
+    }
+
+    return true;
+}
+
+/**
+ * Returns the nearest point on the edge
+ * of the given rectangle.
+ *
+ * @param  {Vector} bl
+ *         Bottom left corner of the rectangle
+ *
+ * @param  {Vector} tr
+ *         Top right corner of the rectangle
+ *
+ * @param  {Vector} pos
+ *         The position to get the nearest point on
+ *
+ * @return {Vector}
+ *         The closest position on the edge of
+ *         the rectangle from 'pos'
+ */
+function GetNearestPointOnRect(bl, tr, pos) {
+    if (pos.x < bl.x)
+        return V(bl.x, Clamp(pos.y, bl.y, tr.y));
+    if (pos.x > tr.x)
+        return V(tr.x, Clamp(pos.y, bl.y, tr.y));
+    if (pos.y < bl.y)
+        return V(Clamp(pos.x, bl.x, tr.x), bl.y);
+    if (pos.y > tr.y)
+        return V(Clamp(pos.x, bl.x, tr.x), tr.y);
+    return V(0, 0);
+}
+
+/**
+ * Clamps a number between a given min and max
+ *
+ * @param  {Number} x
+ *         The number to Clamp
+ *
+ * @param  {Number} min
+ *         The minimum
+ *
+ * @param  {Number} max
+ *         The maximum
+ *
+ * @return {Number}
+ *         The Clamped number
+ */
+function Clamp(x, min, max) {
+    return Math.min(Math.max(x, min), max);
+}
+
+/**
+ * Uses Newton's method to find the roots of
+ * the function 'f' given a derivative 'df'
+ *
+ * @param  {Number} iterations
+ *         The number of iterations to perform
+ *         Newton's method with; the smaller
+ *         the better but less accurate
+ *
+ * @param  {Number} t0
+ *         The starting root value parameter
+ *
+ * @param  {Number} x
+ *         Parameter 1 for the function
+ *
+ * @param  {Number} y
+ *         Parameter 2 for the function
+ *
+ * @param  {Function} f
+ *         The function to find the roots of
+ *         In the form f(t, x, y) = ...
+ *
+ * @param  {Function} df
+ *         The derivative of the function
+ *         In the form of df(t, x, y)
+ *
+ * @return {Number}
+ *         The parameter 't' that results in
+ *         f(t, x, y) = 0
+ */
+function FindRoots(iterations, t0, x, y, f, df) {
+    var t = t0;
+    do {
+        var v = f(t, x, y);
+        var dv = df(t, x, y);
+        if (dv === 0)
+            break;
+        t = t - v / dv;
+        t = Clamp(t, 0.01, 0.99);
+    } while((iterations--) > 0);
+    return t;
+}
+
+/**
+ * Finds and returns the closest 't' value
+ * of the parametric equation for a line.
+ *
+ * Parametric function defined by
+ * X(t) = t(p2.x - p1.x) + p1.x
+ * Y(t) = t(p2.y - p1.y) + p1.y
+ *
+ * Solves for 't' from root of the derivative of
+ * the distance function between the line and <mx, my>
+ * D(t) = sqrt((X(t) - mx)^2 + (Y(t) - my)^2)
+ *
+ * @param  {Vector} p1
+ *         The first point of the line
+ *
+ * @param  {Vector} p2
+ *         The second point of the line
+ *
+ * @param  {Number} mx
+ *         The x-value of the point
+ *         to determine the 't' value
+ *
+ * @param  {Number} my
+ *         The y-value of the point
+ *         to determine the 't' value
+ *
+ * @return {Number}
+ *         The nearest 't' value of <mx, my>
+ *         on the line p1->p2 or -1 if the
+ *         dist < WIRE_DIST_THRESHOLD
+ */
+function GetNearestT(p1, p2, mx, my) {
+    var dx = p2.x - p1.x;
+    var dy = p2.y - p1.y;
+    var t = (dx*(mx - p1.x) + dy*(my - p1.y))/(dx*dx + dy*dy);
+    t = Clamp(t, 0, 1);
+    var pos = V(dx * t + p1.x, dy * t + p1.y);
+    if (pos.sub(V(mx, my)).len2() < WIRE_DIST_THRESHOLD2)
+        return t;
+    else
+        return -1;
+}
+
+
+module.exports.CircleContains = CircleContains;
+module.exports.RectContains = RectContains;
+module.exports.TransformContains = TransformContains;
+module.exports.GetNearestPointOnRect = GetNearestPointOnRect;
+module.exports.Clamp = Clamp;
+module.exports.FindRoots = FindRoots;
+},{"../Constants":29,"./Vector":51}],49:[function(require,module,exports){
 var V = require("./Vector").V;
 
 class Matrix2x3 {
@@ -3507,7 +3572,7 @@ class Matrix2x3 {
 }
 
 module.exports = Matrix2x3;
-},{"./Vector":45}],44:[function(require,module,exports){
+},{"./Vector":51}],50:[function(require,module,exports){
 var V         = require("./Vector").V;
 var Matrix2x3 = require("./Matrix");
 
@@ -3697,7 +3762,7 @@ class Transform {
 }
 
 module.exports = Transform;
-},{"./Matrix":43,"./Vector":45}],45:[function(require,module,exports){
+},{"./Matrix":49,"./Vector":51}],51:[function(require,module,exports){
 
 // Utility method for a new Vector
 function V(x, y) {
@@ -3772,7 +3837,7 @@ class Vector {
 
 module.exports = Vector;
 module.exports.V = V;
-},{}],46:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 class Module {
     constructor(parent, divName, divTextName) {
         this.parent = parent;
@@ -3819,7 +3884,7 @@ module.exports = Module;
 // Requirements
 var render = require("../../views/Renderer").render;
 //
-},{"../../views/Renderer":77}],47:[function(require,module,exports){
+},{"../../views/Renderer":83}],53:[function(require,module,exports){
 var ITEMNAV_WIDTH = require("../Constants").ITEMNAV_WIDTH;
 
 class Popup {
@@ -3883,7 +3948,7 @@ module.exports = Popup;
 var V                 = require("../math/Vector").V;
 var ItemNavController = require("../../controllers/ItemNavController");
 // 
-},{"../../controllers/ItemNavController":5,"../Constants":28,"../math/Vector":45}],48:[function(require,module,exports){
+},{"../../controllers/ItemNavController":4,"../Constants":29,"../math/Vector":51}],54:[function(require,module,exports){
 var IO_PORT_RADIUS = require("../libraries/Constants").IO_PORT_RADIUS;
 
 class IOObject {
@@ -4164,18 +4229,18 @@ var Transform         = require("../libraries/math/Transform");
 var IPort             = require("./IPort");
 var OPort             = require("./OPort");
 
-var Clamp             = require("../libraries/Utils").Clamp;
-var RectContains      = require("../libraries/Utils").RectContains;
+var Clamp             = require("../libraries/math/MathUtils").Clamp;
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
 var getCurrentContext = require("../libraries/Context").getCurrentContext;
-var getChildNode      = require("../controllers/Importer").getChildNode;
-var getIntValue       = require("../controllers/Importer").getIntValue;
-var getStringValue    = require("../controllers/Importer").getStringValue;
-var getFloatValue     = require("../controllers/Importer").getFloatValue;
-var getBooleanValue   = require("../controllers/Importer").getBooleanValue;
+var getChildNode      = require("../libraries/ImportUtils").getChildNode;
+var getIntValue       = require("../libraries/ImportUtils").getIntValue;
+var getStringValue    = require("../libraries/ImportUtils").getStringValue;
+var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
+var getBooleanValue   = require("../libraries/ImportUtils").getBooleanValue;
 var createChildNode   = require("../controllers/Exporter").createChildNode;
 var createTextElement = require("../controllers/Exporter").createTextElement;
 //
-},{"../controllers/Exporter":1,"../controllers/Importer":3,"../libraries/Constants":28,"../libraries/Context":29,"../libraries/Utils":35,"../libraries/math/Transform":44,"../libraries/math/Vector":45,"./IPort":50,"./OPort":51}],49:[function(require,module,exports){
+},{"../controllers/Exporter":1,"../libraries/Constants":29,"../libraries/Context":30,"../libraries/ImportUtils":34,"../libraries/math/MathUtils":48,"../libraries/math/Transform":50,"../libraries/math/Vector":51,"./IPort":56,"./OPort":57}],55:[function(require,module,exports){
 var DEFAULT_BORDER_COLOR = require("../libraries/Constants").DEFAULT_BORDER_COLOR;
 var DEFAULT_FILL_COLOR   = require("../libraries/Constants").DEFAULT_FILL_COLOR;
 var IO_PORT_BORDER_WIDTH = require("../libraries/Constants").IO_PORT_BORDER_WIDTH;
@@ -4345,15 +4410,14 @@ module.exports = IOPort;
 // Requirements
 var V         = require("../libraries/math/Vector").V;
 var Transform = require("../libraries/math/Transform");
-var Importer  = require("../controllers/Importer");
 
-var RectContains      = require("../libraries/Utils").RectContains;
-var CircleContains    = require("../libraries/Utils").CircleContains;
-var getFloatValue     = require("../controllers/Importer").getFloatValue;
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
+var CircleContains    = require("../libraries/math/MathUtils").CircleContains;
+var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
 var createChildNode   = require("../controllers/Exporter").createChildNode;
 var createTextElement = require("../controllers/Exporter").createTextElement;
 // 
-},{"../controllers/Exporter":1,"../controllers/Importer":3,"../libraries/Constants":28,"../libraries/Utils":35,"../libraries/math/Transform":44,"../libraries/math/Vector":45}],50:[function(require,module,exports){
+},{"../controllers/Exporter":1,"../libraries/Constants":29,"../libraries/ImportUtils":34,"../libraries/math/MathUtils":48,"../libraries/math/Transform":50,"../libraries/math/Vector":51}],56:[function(require,module,exports){
 var IOPort = require("./IOPort");
 
 class IPort extends IOPort {
@@ -4396,7 +4460,7 @@ module.exports = IPort;
 // Requirements
 var V = require("../libraries/math/Vector").V;
 // 
-},{"../libraries/math/Vector":45,"./IOPort":49}],51:[function(require,module,exports){
+},{"../libraries/math/Vector":51,"./IOPort":55}],57:[function(require,module,exports){
 var IOPort = require("./IOPort");
 
 class OPort extends IOPort {
@@ -4440,7 +4504,7 @@ module.exports = OPort;
 // Requirements
 var V = require("../libraries/math/Vector").V;
 // 
-},{"../libraries/math/Vector":45,"./IOPort":49}],52:[function(require,module,exports){
+},{"../libraries/math/Vector":51,"./IOPort":55}],58:[function(require,module,exports){
 var DEFAULT_SIZE       = require("../libraries/Constants").DEFAULT_SIZE;
 var DEFAULT_FILL_COLOR = require("../libraries/Constants").DEFAULT_FILL_COLOR;
 
@@ -4669,6 +4733,14 @@ class Wire {
     }
 }
 
+function FindByUID(objects, id) {
+    for (var i = 0; i < objects.length; i++) {
+        if (objects[i].uid === id)
+            return objects[i];
+    }
+    return undefined;
+}
+
 module.exports = Wire;
 
 // Requirements
@@ -4677,18 +4749,16 @@ var Transform   = require("../libraries/math/Transform");
 var BezierCurve = require("../libraries/math/Bezier");
 var WirePort    = require("./WirePort");
 
-var FindByUID = require("../libraries/Utils").FindByUID;
-
-var getChildNode      = require("../controllers/Importer").getChildNode;
-var getIntValue       = require("../controllers/Importer").getIntValue;
-var getStringValue    = require("../controllers/Importer").getStringValue;
-var getFloatValue     = require("../controllers/Importer").getFloatValue;
-var getBooleanValue   = require("../controllers/Importer").getBooleanValue;
+var getChildNode    = require("../libraries/ImportUtils").getChildNode;
+var getIntValue     = require("../libraries/ImportUtils").getIntValue;
+var getStringValue  = require("../libraries/ImportUtils").getStringValue;
+var getFloatValue   = require("../libraries/ImportUtils").getFloatValue;
+var getBooleanValue = require("../libraries/ImportUtils").getBooleanValue;
 
 var createChildNode   = require("../controllers/Exporter").createChildNode;
 var createTextElement = require("../controllers/Exporter").createTextElement;
 // 
-},{"../controllers/Exporter":1,"../controllers/Importer":3,"../libraries/Constants":28,"../libraries/Utils":35,"../libraries/math/Bezier":42,"../libraries/math/Transform":44,"../libraries/math/Vector":45,"./WirePort":53}],53:[function(require,module,exports){
+},{"../controllers/Exporter":1,"../libraries/Constants":29,"../libraries/ImportUtils":34,"../libraries/math/Bezier":47,"../libraries/math/Transform":50,"../libraries/math/Vector":51,"./WirePort":59}],59:[function(require,module,exports){
 var IO_PORT_RADIUS       = require("../libraries/Constants").DEFAULT_BORDER_COLOR;
 var WIRE_SNAP_THRESHOLD       = require("../libraries/Constants").WIRE_SNAP_THRESHOLD;
 
@@ -4815,13 +4885,12 @@ module.exports = WirePort;
 // Requirements
 var V         = require("../libraries/math/Vector").V;
 var Transform = require("../libraries/math/Transform");
-var Importer  = require("../controllers/Importer");
 
-var CircleContains    = require("../libraries/Utils").CircleContains;
+var CircleContains    = require("../libraries/math/MathUtils").CircleContains;
 // 
 
-Importer.types.push(WirePort);
-},{"../controllers/Importer":3,"../libraries/Constants":28,"../libraries/Utils":35,"../libraries/math/Transform":44,"../libraries/math/Vector":45,"./IOObject":48}],54:[function(require,module,exports){
+
+},{"../libraries/Constants":29,"../libraries/math/MathUtils":48,"../libraries/math/Transform":50,"../libraries/math/Vector":51,"./IOObject":54}],60:[function(require,module,exports){
 var DEFAULT_SIZE   = require("../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../IOObject");
@@ -4885,14 +4954,14 @@ module.exports = Gate;
 
 // Requirements
 var Images   = require("../../libraries/Images");
-var Importer = require("../../controllers/Importer");
 
-var getIntValue       = require("../../controllers/Importer").getIntValue;
-var getBooleanValue   = require("../../controllers/Importer").getBooleanValue;
-var getChildNode      = require("../../controllers/Importer").getChildNode;
+
+var getIntValue       = require("../../libraries/ImportUtils").getIntValue;
+var getBooleanValue   = require("../../libraries/ImportUtils").getBooleanValue;
+var getChildNode      = require("../../libraries/ImportUtils").getChildNode;
 var createTextElement = require("../../controllers/Exporter").createTextElement;
 // 
-},{"../../controllers/Exporter":1,"../../controllers/Importer":3,"../../libraries/Constants":28,"../../libraries/Images":32,"../IOObject":48}],55:[function(require,module,exports){
+},{"../../controllers/Exporter":1,"../../libraries/Constants":29,"../../libraries/Images":33,"../../libraries/ImportUtils":34,"../IOObject":54}],61:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var Gate = require("../Gate");
@@ -4946,11 +5015,11 @@ module.exports = SRFlipFlop;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(SRFlipFlop);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/math/Vector":45,"../Gate":54}],56:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/math/Vector":51,"../Gate":60}],62:[function(require,module,exports){
 var Gate = require("../Gate");
 
 class ANDGate extends Gate {
@@ -4999,11 +5068,11 @@ module.exports = ANDGate;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(ANDGate);
-},{"../../../controllers/Importer":3,"../../../libraries/Images":32,"../../../libraries/math/Vector":45,"../Gate":54}],57:[function(require,module,exports){
+
+},{"../../../libraries/Images":33,"../../../libraries/math/Vector":51,"../Gate":60}],63:[function(require,module,exports){
 var Gate = require("../Gate");
 
 class BUFGate extends Gate {
@@ -5030,11 +5099,11 @@ module.exports = BUFGate;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(BUFGate);
-},{"../../../controllers/Importer":3,"../../../libraries/Images":32,"../Gate":54}],58:[function(require,module,exports){
+
+},{"../../../libraries/Images":33,"../Gate":60}],64:[function(require,module,exports){
 var Gate = require("../Gate");
 
 class ORGate extends Gate {
@@ -5100,11 +5169,11 @@ module.exports = ORGate;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(ORGate);
-},{"../../../controllers/Importer":3,"../../../libraries/Images":32,"../../../libraries/math/Vector":45,"../Gate":54}],59:[function(require,module,exports){
+
+},{"../../../libraries/Images":33,"../../../libraries/math/Vector":51,"../Gate":60}],65:[function(require,module,exports){
 var Gate = require("../Gate");
 
 class XORGate extends Gate {
@@ -5176,11 +5245,11 @@ module.exports = XORGate;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(XORGate);
-},{"../../../controllers/Importer":3,"../../../libraries/Images":32,"../../../libraries/math/Vector":45,"../Gate":54}],60:[function(require,module,exports){
+
+},{"../../../libraries/Images":33,"../../../libraries/math/Vector":51,"../Gate":60}],66:[function(require,module,exports){
 // key board input inputs
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
@@ -5211,13 +5280,13 @@ module.exports = Button;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
 
-var CircleContains = require("../../../libraries/Utils").CircleContains;
+
+var CircleContains = require("../../../libraries/math/MathUtils").CircleContains;
 // 
 
-Importer.types.push(Button);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Images":32,"../../../libraries/Utils":35,"../../IOObject":48}],61:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/Images":33,"../../../libraries/math/MathUtils":48,"../../IOObject":54}],67:[function(require,module,exports){
 var IOObject = require("../../IOObject");
 
 class Clock extends IOObject {
@@ -5245,11 +5314,11 @@ module.exports = Clock;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(Clock);
-},{"../../../controllers/Importer":3,"../../../libraries/Images":32,"../../IOObject":48}],62:[function(require,module,exports){
+
+},{"../../../libraries/Images":33,"../../IOObject":54}],68:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../../IOObject");
@@ -5269,11 +5338,11 @@ module.exports = ConstantHigh;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(ConstantHigh);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Images":32,"../../IOObject":48}],63:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/Images":33,"../../IOObject":54}],69:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../../IOObject");
@@ -5293,11 +5362,11 @@ module.exports = ConstantLow;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(ConstantLow);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Images":32,"../../IOObject":48}],64:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/Images":33,"../../IOObject":54}],70:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../../IOObject");
@@ -5410,11 +5479,11 @@ module.exports = Keyboard;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(Keyboard);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Images":32,"../../../libraries/math/Vector":45,"../../IOObject":48}],65:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/Images":33,"../../../libraries/math/Vector":51,"../../IOObject":54}],71:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../../IOObject");
@@ -5446,13 +5515,13 @@ module.exports = Switch;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 
 var createTextElement = require("../../../controllers/Exporter").createTextElement;
 // 
 
-Importer.types.push(Switch);
-},{"../../../controllers/Exporter":1,"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Images":32,"../../IOObject":48}],66:[function(require,module,exports){
+
+},{"../../../controllers/Exporter":1,"../../../libraries/Constants":29,"../../../libraries/Images":33,"../../IOObject":54}],72:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var Gate = require("../Gate");
@@ -5502,13 +5571,13 @@ module.exports = Decoder;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
 
-var Clamp = require("../../../libraries/Utils").Clamp;
+
+var Clamp = require("../../../libraries/math/MathUtils").Clamp;
 // 
 
-Importer.types.push(Decoder);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Utils":35,"../../../libraries/math/Vector":45,"../Gate":54}],67:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/math/MathUtils":48,"../../../libraries/math/Vector":51,"../Gate":60}],73:[function(require,module,exports){
 var DEFAULT_SIZE   = require("../../../libraries/Constants").DEFAULT_SIZE;
 var IO_PORT_LENGTH = require("../../../libraries/Constants").IO_PORT_LENGTH;
 
@@ -5594,11 +5663,11 @@ module.exports = Demultiplexer;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(Demultiplexer);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/math/Vector":45,"../Gate":54}],68:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/math/Vector":51,"../Gate":60}],74:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var Gate = require("../Gate");
@@ -5662,13 +5731,13 @@ module.exports = Encoder;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
 
-var Clamp = require("../../../libraries/Utils").Clamp;
+
+var Clamp = require("../../../libraries/math/MathUtils").Clamp;
 // 
 
-Importer.types.push(Encoder);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Utils":35,"../../../libraries/math/Vector":45,"../Gate":54}],69:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/math/MathUtils":48,"../../../libraries/math/Vector":51,"../Gate":60}],75:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../../IOObject");
@@ -5790,17 +5859,14 @@ IC.getXMLName = function() { return "ic"; }
 module.exports = IC;
 
 // Requirements
-var Importer = require("../../../controllers/Importer");
-
-var Clamp             = require("../../../libraries/Utils").Clamp;
-var FindIC            = require("../../../libraries/Utils").FindIC;
+var Clamp             = require("../../../libraries/math/MathUtils").Clamp;
+var FindIC            = require("../../../libraries/ObjectUtils").FindIC;
+var getIntValue       = require("../../../libraries/ImportUtils").getIntValue;
+var getChildNode      = require("../../../libraries/ImportUtils").getChildNode;
 var createTextElement = require("../../../controllers/Exporter").createTextElement;
-var getIntValue       = require("../../../controllers/Importer").getIntValue;
-var getChildNode      = require("../../../controllers/Importer").getChildNode;
 // 
 
-Importer.types.push(IC);
-},{"../../../controllers/Exporter":1,"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Utils":35,"../../IOObject":48}],70:[function(require,module,exports){
+},{"../../../controllers/Exporter":1,"../../../libraries/Constants":29,"../../../libraries/ImportUtils":34,"../../../libraries/ObjectUtils":35,"../../../libraries/math/MathUtils":48,"../../IOObject":54}],76:[function(require,module,exports){
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 var IO_PORT_LENGTH = require("../../../libraries/Constants").IO_PORT_LENGTH;
 
@@ -5945,22 +6011,21 @@ module.exports = ICData;
 // Requirements
 var V         = require("../../../libraries/math/Vector").V;
 var Transform = require("../../../libraries/math/Transform");
-var Importer  = require("../../../controllers/Importer");
 var IPort     = require("../../IPort");
 var OPort     = require("../../OPort");
 // var Clock = require("../inputs/Clock");
 
-var FindIC                = require("../../../libraries/Utils").FindIC;
-var GetAllWires           = require("../../../libraries/Utils").GetAllWires;
-var GetNearestPointOnRect = require("../../../libraries/Utils").GetNearestPointOnRect;
+var FindIC                = require("../../../libraries/ObjectUtils").FindIC;
+var GetAllWires           = require("../../../libraries/ObjectUtils").GetAllWires;
+var GetNearestPointOnRect = require("../../../libraries/math/MathUtils").GetNearestPointOnRect;
 var SeparateGroup         = require("../../../libraries/Utils").SeparateGroup;
 var CopyGroup             = require("../../../libraries/CopyUtils").CopyGroup;
 var UIDManager            = require("../../../libraries/UIDManager").GetAllWires;
+var getIntValue           = require("../../../libraries/ImportUtils").getIntValue;
+var getChildNode          = require("../../../libraries/ImportUtils").getChildNode;
 var createTextElement     = require("../../../controllers/Exporter").createTextElement;
-var getIntValue           = require("../../../controllers/Importer").getIntValue;
-var getChildNode          = require("../../../controllers/Importer").getChildNode;
 // 
-},{"../../../controllers/Exporter":1,"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/CopyUtils":30,"../../../libraries/UIDManager":34,"../../../libraries/Utils":35,"../../../libraries/math/Transform":44,"../../../libraries/math/Vector":45,"../../IOObject":48,"../../IPort":50,"../../OPort":51}],71:[function(require,module,exports){
+},{"../../../controllers/Exporter":1,"../../../libraries/Constants":29,"../../../libraries/CopyUtils":31,"../../../libraries/ImportUtils":34,"../../../libraries/ObjectUtils":35,"../../../libraries/UIDManager":37,"../../../libraries/Utils":38,"../../../libraries/math/MathUtils":48,"../../../libraries/math/Transform":50,"../../../libraries/math/Vector":51,"../../IOObject":54,"../../IPort":56,"../../OPort":57}],77:[function(require,module,exports){
 var IOObject = require("../../IOObject");
 
 class Label extends IOObject {
@@ -6006,13 +6071,13 @@ module.exports = Label;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
+
 
 var render = require("../../../views/Renderer").render;
 // 
 
-Importer.types.push(Label);
-},{"../../../controllers/Importer":3,"../../../libraries/math/Vector":45,"../../../views/Renderer":77,"../../IOObject":48}],72:[function(require,module,exports){
+
+},{"../../../libraries/math/Vector":51,"../../../views/Renderer":83,"../../IOObject":54}],78:[function(require,module,exports){
 var DEFAULT_SIZE   = require("../../../libraries/Constants").DEFAULT_SIZE;
 var IO_PORT_LENGTH = require("../../../libraries/Constants").IO_PORT_LENGTH;
 
@@ -6096,11 +6161,11 @@ module.exports = Multiplexer;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(Multiplexer);
-},{"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/math/Vector":45,"../Gate":54}],73:[function(require,module,exports){
+
+},{"../../../libraries/Constants":29,"../../../libraries/math/Vector":51,"../Gate":60}],79:[function(require,module,exports){
 var IOObject = require("../../IOObject");
 
 class SevenSegmentDisplay extends IOObject {
@@ -6171,11 +6236,11 @@ module.exports = SevenSegmentDisplay;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(SevenSegmentDisplay);
-},{"../../../controllers/Importer":3,"../../../libraries/Images":32,"../../../libraries/math/Vector":45,"../../IOObject":48}],74:[function(require,module,exports){
+
+},{"../../../libraries/Images":33,"../../../libraries/math/Vector":51,"../../IOObject":54}],80:[function(require,module,exports){
 var DEFAULT_SIZE   = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../../IOObject");
@@ -6245,15 +6310,16 @@ module.exports = LED;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
 
-var getStringValue    = require("../../../controllers/Importer").getStringValue;
-var getChildNode      = require("../../../controllers/Importer").getChildNode;
+
+var getStringValue = require("../../../libraries/ImportUtils").getStringValue;
+var getChildNode   = require("../../../libraries/ImportUtils").getChildNode;
+
 var createTextElement = require("../../../controllers/Exporter").createTextElement;
 // 
 
-Importer.types.push(LED);
-},{"../../../controllers/Exporter":1,"../../../controllers/Importer":3,"../../../libraries/Constants":28,"../../../libraries/Images":32,"../../../libraries/math/Vector":45,"../../IOObject":48}],75:[function(require,module,exports){
+
+},{"../../../controllers/Exporter":1,"../../../libraries/Constants":29,"../../../libraries/Images":33,"../../../libraries/ImportUtils":34,"../../../libraries/math/Vector":51,"../../IOObject":54}],81:[function(require,module,exports){
 var PROPAGATION_TIME = require("../libraries/Constants").PROPAGATION_TIME;
 var GRID_SIZE        = require("../libraries/Constants").GRID_SIZE;
 
@@ -6416,22 +6482,22 @@ var Renderer       = require("./Renderer");
 var render         = require("./Renderer").render;
 var getCurrentTool = require("../controllers/tools/Tool").getCurrent;
 // 
-},{"../controllers/tools/Tool":26,"../libraries/Camera":27,"../libraries/Constants":28,"../libraries/HistoryManager":31,"../libraries/Propagation":33,"../libraries/math/Vector":45,"../models/Wire":52,"./Renderer":77}],76:[function(require,module,exports){
-// var Utils           = require("../libraries/Utils")
+},{"../controllers/tools/Tool":26,"../libraries/Camera":28,"../libraries/Constants":29,"../libraries/HistoryManager":32,"../libraries/Propagation":36,"../libraries/math/Vector":51,"../models/Wire":58,"./Renderer":83}],82:[function(require,module,exports){
+var Utils           = require("../libraries/Utils")
 var Images              = require("../libraries/Images");
 var Context             = require("../libraries/Context");
-// var ICDesigner          = require("../controllers/ICDesigner");
-// var SelectionPopup      = require("../controllers/selectionpopup/SelectionPopup");
-// var ContextMenu         = require("../controllers/contextmenu/ContextMenu");
-// var SelectionTool       = require("../controllers/tools/SelectionTool");
-// var Input               = require("../controllers/Input");
-// var TransformController = require("../controllers/TransformController");
-// var WireController      = require("../controllers/WireController");
-// var SelectionBox        = require("../controllers/SelectionBox");
-// var IOObject            = require("../models/IOObject");
-// var CircuitDesigner     = require("./CircuitDesigner");
-// 
-// var render = require("./Renderer").render;
+var ICDesigner          = require("../controllers/ICDesigner");
+var SelectionPopup      = require("../controllers/selectionpopup/SelectionPopup");
+var ContextMenu         = require("../controllers/contextmenu/ContextMenu");
+var SelectionTool       = require("../controllers/tools/SelectionTool");
+var Input               = require("../controllers/Input");
+var TransformController = require("../controllers/TransformController");
+var WireController      = require("../controllers/WireController");
+var SelectionBox        = require("../controllers/SelectionBox");
+var IOObject            = require("../models/IOObject");
+var CircuitDesigner     = require("./CircuitDesigner");
+
+var render = require("./Renderer").render;
 
 // var Popup;
 
@@ -6456,6 +6522,7 @@ function Start() {
     // contextmenu = new ContextMenu();
     
     Input.registerContext(Context.getMainContext());
+    ICDesigner.setup();
     Input.registerContext(ICDesigner.context);
     
     Input.addMouseListener(TransformController);
@@ -6482,9 +6549,9 @@ function OnFinishLoading() {
     render();
 }
 
-// document.body.onload = Start;
+document.body.onload = Start;
 
-},{"../libraries/Context":29,"../libraries/Images":32}],77:[function(require,module,exports){
+},{"../controllers/ICDesigner":2,"../controllers/Input":3,"../controllers/SelectionBox":6,"../controllers/TransformController":7,"../controllers/WireController":8,"../controllers/contextmenu/ContextMenu":9,"../controllers/selectionpopup/SelectionPopup":22,"../controllers/tools/SelectionTool":25,"../libraries/Context":30,"../libraries/Images":33,"../libraries/Utils":38,"../models/IOObject":54,"./CircuitDesigner":81,"./Renderer":83}],83:[function(require,module,exports){
 var Browser = require("../libraries/Utils").GetBrowser();
 
 class Renderer {
@@ -6679,4 +6746,4 @@ var render = (function() {
 
 module.exports = Renderer;
 module.exports.render = render.render;
-},{"../libraries/Context":29,"../libraries/Utils":35}]},{},[76]);
+},{"../libraries/Context":30,"../libraries/Utils":38}]},{},[82]);

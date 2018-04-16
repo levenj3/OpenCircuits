@@ -110,7 +110,6 @@ module.exports = Keyboard;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(Keyboard);

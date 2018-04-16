@@ -25,7 +25,6 @@ module.exports = Clock;
 
 // Requirements
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(Clock);

@@ -28,7 +28,7 @@ class SelectionPopup extends Popup {
     }
     onKeyDown(code) {
         if (code === DELETE_KEY && !this.focused) {
-            RemoveObjects(getCurrentContext(), SelectionTool.selections, true);
+            SelectionTool.removeSelections(true);
             return;
         }
         if (code === ESC_KEY && !this.hidden) {
@@ -69,6 +69,5 @@ module.exports = selectionpopup;
 // Requirements
 var SelectionTool = require("../tools/SelectionTool");
 
-var RemoveObjects     = require("../../libraries/Utils").RemoveObjects;
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
 // 

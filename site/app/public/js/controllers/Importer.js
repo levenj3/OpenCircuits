@@ -1,3 +1,22 @@
+// var SevenSegmentDisplay = require("../models/ioobjects/outputs/7SegmentDisplay");
+// var ConstantLow   = require("../models/ioobjects/inputs/ConstantLow");
+// var ConstantHigh  = require("../models/ioobjects/inputs/ConstantHigh");
+// var Button        = require("../models/ioobjects/inputs/Button");
+// var Switch        = require("../models/ioobjects/inputs/Switch");
+// var Clock         = require("../models/ioobjects/inputs/Clock");
+// var Keyboard      = require("../models/ioobjects/inputs/Keyboard");
+// var LED           = require("../models/ioobjects/outputs/LED");
+// var BUFGate       = require("../models/ioobjects/gates/BUFGate");
+// var ANDGate       = require("../models/ioobjects/gates/ANDGate");
+// var ORGate        = require("../models/ioobjects/gates/ORGate");
+// var XORGate       = require("../models/ioobjects/gates/XORGate");
+// var SRFlipFlop    = require("../models/ioobjects/flipflops/SRFlipFlop");
+// var Multiplexer   = require("../models/ioobjects/other/Multiplexer");
+// var Demultiplexer = require("../models/ioobjects/other/Demultiplexer");
+// var Encoder       = require("../models/ioobjects/other/Encoder");
+// var Decoder       = require("../models/ioobjects/other/Decoder");
+// var Label         = require("../models/ioobjects/other/Label");
+
 var Importer = (function() {   
     var fileInput = document.getElementById('file-input');
     fileInput.onchange = () => { Importer.openFile(); };
@@ -101,57 +120,21 @@ var Importer = (function() {
     };
 })();
 
-// UTILS
-function getChildNode(parent, name) {
-    for (var i = 0; i < parent.childNodes.length; i++) {
-        if (parent.childNodes[i].nodeName === name)
-            return parent.childNodes[i];
-    }
-    return undefined;
-}
-function getChildrenByTagName(parent, name) {
-    var children = [];
-    for (var i = 0; i < parent.childNodes.length; i++) {
-        if (parent.childNodes[i].nodeName === name)
-            children.push(parent.childNodes[i]);
-    }
-    return children;
-}
-function getBooleanValue(node, def) {
-    if (node == undefined)
-        return def;
-    return node.childNodes[0].nodeValue === "true" ? true : false;
-}
-function getIntValue(node, def) {
-    if (node == undefined)
-        return def;
-    return parseInt(node.childNodes[0].nodeValue);
-}
-function getFloatValue(node, def) {
-    if (node == undefined)
-        return def;
-    return parseFloat(node.childNodes[0].nodeValue);
-}
-function getStringValue(node, def) {
-    if (node == undefined)
-        return def;
-    return node.childNodes[0].nodeValue;
-}
-
 module.exports = Importer;
-module.exports.getChildNode = getChildNode;
-module.exports.getChildrenByTagName = getChildrenByTagName;
-module.exports.getBooleanValue = getBooleanValue;
-module.exports.getIntValue = getIntValue;
-module.exports.getFloatValue = getIntValue;
-module.exports.getStringValue = getIntValue;
+
 
 // Requirements
 var ICData = require("../models/ioobjects/other/ICData");
 var Wire   = require("../models/Wire");
 var IPort  = require("../models/IPort");
 
-var getCurrentContext = require("../libraries/Context").getCurrentContext;
-var reset             = require("../libraries/Context").reset;
-var render            = require("../views/Renderer").render;
+var getCurrentContext    = require("../libraries/Context").getCurrentContext;
+var reset                = require("../libraries/Context").reset;
+var getChildNode         = require("../libraries/ImportUtils").getChildNode;
+var getChildrenByTagName = require("../libraries/ImportUtils").getChildrenByTagName;
+var getBooleanValue      = require("../libraries/ImportUtils").getBooleanValue;
+var getIntValue          = require("../libraries/ImportUtils").getIntValue;
+var getFloatValue        = require("../libraries/ImportUtils").getFloatValue;
+var getStringValue       = require("../libraries/ImportUtils").getStringValue;
+var render               = require("../views/Renderer").render;
 //

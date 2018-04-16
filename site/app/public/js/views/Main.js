@@ -1,18 +1,18 @@
-// var Utils           = require("../libraries/Utils")
+var Utils           = require("../libraries/Utils")
 var Images              = require("../libraries/Images");
 var Context             = require("../libraries/Context");
-// var ICDesigner          = require("../controllers/ICDesigner");
-// var SelectionPopup      = require("../controllers/selectionpopup/SelectionPopup");
-// var ContextMenu         = require("../controllers/contextmenu/ContextMenu");
-// var SelectionTool       = require("../controllers/tools/SelectionTool");
-// var Input               = require("../controllers/Input");
-// var TransformController = require("../controllers/TransformController");
-// var WireController      = require("../controllers/WireController");
-// var SelectionBox        = require("../controllers/SelectionBox");
-// var IOObject            = require("../models/IOObject");
-// var CircuitDesigner     = require("./CircuitDesigner");
-// 
-// var render = require("./Renderer").render;
+var ICDesigner          = require("../controllers/ICDesigner");
+var SelectionPopup      = require("../controllers/selectionpopup/SelectionPopup");
+var ContextMenu         = require("../controllers/contextmenu/ContextMenu");
+var SelectionTool       = require("../controllers/tools/SelectionTool");
+var Input               = require("../controllers/Input");
+var TransformController = require("../controllers/TransformController");
+var WireController      = require("../controllers/WireController");
+var SelectionBox        = require("../controllers/SelectionBox");
+var IOObject            = require("../models/IOObject");
+var CircuitDesigner     = require("./CircuitDesigner");
+
+var render = require("./Renderer").render;
 
 // var Popup;
 
@@ -37,6 +37,7 @@ function Start() {
     // contextmenu = new ContextMenu();
     
     Input.registerContext(Context.getMainContext());
+    ICDesigner.setup();
     Input.registerContext(ICDesigner.context);
     
     Input.addMouseListener(TransformController);
@@ -63,4 +64,4 @@ function OnFinishLoading() {
     render();
 }
 
-// document.body.onload = Start;
+document.body.onload = Start;

@@ -61,10 +61,10 @@ module.exports = Gate;
 
 // Requirements
 var Images   = require("../../libraries/Images");
-var Importer = require("../../controllers/Importer");
 
-var getIntValue       = require("../../controllers/Importer").getIntValue;
-var getBooleanValue   = require("../../controllers/Importer").getBooleanValue;
-var getChildNode      = require("../../controllers/Importer").getChildNode;
+
+var getIntValue       = require("../../libraries/ImportUtils").getIntValue;
+var getBooleanValue   = require("../../libraries/ImportUtils").getBooleanValue;
+var getChildNode      = require("../../libraries/ImportUtils").getChildNode;
 var createTextElement = require("../../controllers/Exporter").createTextElement;
 // 

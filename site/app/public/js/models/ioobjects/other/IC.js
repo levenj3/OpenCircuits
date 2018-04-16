@@ -119,13 +119,9 @@ IC.getXMLName = function() { return "ic"; }
 module.exports = IC;
 
 // Requirements
-var Importer = require("../../../controllers/Importer");
-
-var Clamp             = require("../../../libraries/Utils").Clamp;
-var FindIC            = require("../../../libraries/Utils").FindIC;
+var Clamp             = require("../../../libraries/math/MathUtils").Clamp;
+var FindIC            = require("../../../libraries/ObjectUtils").FindIC;
+var getIntValue       = require("../../../libraries/ImportUtils").getIntValue;
+var getChildNode      = require("../../../libraries/ImportUtils").getChildNode;
 var createTextElement = require("../../../controllers/Exporter").createTextElement;
-var getIntValue       = require("../../../controllers/Importer").getIntValue;
-var getChildNode      = require("../../../controllers/Importer").getChildNode;
 // 
-
-Importer.types.push(IC);

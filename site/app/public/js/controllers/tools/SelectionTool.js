@@ -182,6 +182,33 @@ var SelectionTool = (function() {
                 this.midpoint.translate(this.selections[i].getPos());
             this.midpoint = this.midpoint.scale(1. / this.selections.length);
         },
+        removeSelections(doAction) {
+            if (this.selections.length === 0)
+                return;
+                
+            var action = new GroupAction();
+            var things = GetAllThingsBetween(objects);
+            for (var i = 0; i < things.length; i++) {
+                if (things[i].selected)
+                    this.deselect([things[i]]);
+                if (things[i] instanceof Wire || things[i] instanceof WirePort) {
+                    var oldinput = things[i].input;
+                    var oldconnection = things[i].connection;
+                    things[i].remove();
+                    if (doAction)
+                        action.add(new DeleteAction(things[i], oldinput, oldconnection));
+                }
+            }
+            for (var i = 0; i < things.length; i++) {
+                if (!(things[i] instanceof Wire || things[i] instanceof WirePort)) {
+                    things[i].remove();
+                    if (doAction)
+                        action.add(new DeleteAction(things[i]));
+                }
+            }
+            if (doAction)
+                getCurrentContext().addAction(action);
+        },
         draw: function(renderer) {
             var camera = renderer.getCamera();
             if (this.selections.length > 0 && !this.drag) {
@@ -199,7 +226,9 @@ module.exports = SelectionTool;
 
 // Requirements
 var SelectAction        = require("../../libraries/actions/SelectAction");
+var DeleteAction        = require("../../libraries/actions/DeleteAction");
 var GroupAction         = require("../../libraries/actions/GroupAction");
+var GetAllThingsBetween = require("../../libraries/ObjectUtils").GetAllThingsBetween;
 var Input               = require("../Input");
 var ICDesigner          = require("../ICDesigner");
 var TransformController = require("../TransformController");
@@ -208,6 +237,7 @@ var SelectionPopup      = require("../selectionpopup/SelectionPopup");
 var Tool                = require("./Tool");
 var IOObject            = require("../../models/IOObject");
 var Wire                = require("../../models/Wire");
+var WirePort            = require("../../models/WirePort");
 
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
 //

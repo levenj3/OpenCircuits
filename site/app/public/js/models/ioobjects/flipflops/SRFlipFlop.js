@@ -51,7 +51,6 @@ module.exports = SRFlipFlop;
 
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
-var Importer = require("../../../controllers/Importer");
+
 // 
 
-Importer.types.push(SRFlipFlop);

@@ -167,11 +167,10 @@ module.exports = IOPort;
 // Requirements
 var V         = require("../libraries/math/Vector").V;
 var Transform = require("../libraries/math/Transform");
-var Importer  = require("../controllers/Importer");
 
-var RectContains      = require("../libraries/Utils").RectContains;
-var CircleContains    = require("../libraries/Utils").CircleContains;
-var getFloatValue     = require("../controllers/Importer").getFloatValue;
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
+var CircleContains    = require("../libraries/math/MathUtils").CircleContains;
+var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
 var createChildNode   = require("../controllers/Exporter").createChildNode;
 var createTextElement = require("../controllers/Exporter").createTextElement;
 // 

@@ -67,11 +67,11 @@ module.exports = LED;
 // Requirements
 var V        = require("../../../libraries/math/Vector").V;
 var Images   = require("../../../libraries/Images");
-var Importer = require("../../../controllers/Importer");
 
-var getStringValue    = require("../../../controllers/Importer").getStringValue;
-var getChildNode      = require("../../../controllers/Importer").getChildNode;
+
+var getStringValue = require("../../../libraries/ImportUtils").getStringValue;
+var getChildNode   = require("../../../libraries/ImportUtils").getChildNode;
+
 var createTextElement = require("../../../controllers/Exporter").createTextElement;
 // 
 
-Importer.types.push(LED);
