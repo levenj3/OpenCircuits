@@ -23,8 +23,11 @@ var PlaceItemController = (function() {
     function setup(id, obj, not) {
         var button = document.getElementById(id + "-button");
         var image  = document.getElementById(id + "-image");
-        button.onclick  =  () => { PlaceItemController.place(new obj(), not); };
-        image.ondragend = (e) => { PlaceItemController.onDragEnd(e); };
+        
+        if (button)
+            button.onclick  =  () => { PlaceItemController.place(new obj(), not); };
+        if (image)
+            image.ondragend = (e) => { PlaceItemController.onDragEnd(e); };
     }
     setup("constantlow", ConstantLow);
     setup("constanthigh", ConstantHigh);
@@ -68,6 +71,8 @@ var PlaceItemController = (function() {
         }
     };
 })();
+
+module.exports = PlaceItemController;
 
 // Requirements
 var ItemTool = require("./tools/ItemTool");

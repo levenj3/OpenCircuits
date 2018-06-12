@@ -1,7 +1,13 @@
-var IO_PORT_RADIUS       = require("../libraries/Constants").DEFAULT_BORDER_COLOR;
-var WIRE_SNAP_THRESHOLD       = require("../libraries/Constants").WIRE_SNAP_THRESHOLD;
+// Requirements
+var IO_PORT_RADIUS      = require("../libraries/Constants").DEFAULT_BORDER_COLOR;
+var WIRE_SNAP_THRESHOLD = require("../libraries/Constants").WIRE_SNAP_THRESHOLD;
 
-var IOObject = require("./IOObject");
+var V         = require("../libraries/math/Vector").V;
+var Transform = require("../libraries/math/Transform");
+var IOObject  = require("./IOObject");
+
+var CircleContains = require("../libraries/math/MathUtils").CircleContains;
+// 
 
 class WirePort extends IOObject {
     constructor(context) {
@@ -120,11 +126,3 @@ function snap(wire, x, c) {
 }
 
 module.exports = WirePort;
-
-// Requirements
-var V         = require("../libraries/math/Vector").V;
-var Transform = require("../libraries/math/Transform");
-
-var CircleContains    = require("../libraries/math/MathUtils").CircleContains;
-// 
-

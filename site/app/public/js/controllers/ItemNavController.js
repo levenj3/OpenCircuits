@@ -1,10 +1,12 @@
-var ITEMNAV_WIDTH = require("../libraries/Constants").ITEMNAV_WIDTH;
+var ITEMNAV_WIDTH  = require("../libraries/Constants").ITEMNAV_WIDTH;
+var SelectionPopup = require("./selectionpopup/SelectionPopup");
 
 var ItemNavController = (function() {
     var tab = document.getElementById("open-items-tab");
     var container = document.getElementById("items");
 
-    tab.onclick = () => { ItemNavController.toggle(); };
+    if (tab)
+        tab.onclick = () => { ItemNavController.toggle(); };
 
     var open = function() {
         container.style.width       = ITEMNAV_WIDTH + "px";
@@ -13,6 +15,7 @@ var ItemNavController = (function() {
         tab.style.backgroundColor   = "rgba(200, 200, 200, 0.0)";
         tab.style.fontSize          = "2.5em";
         tab.innerHTML               = "&times;";
+        SelectionPopup.setPos(SelectionPopup.pos, ITEMNAV_WIDTH);
     }
     var close = function() {
         container.style.width       = "0px";
@@ -21,6 +24,7 @@ var ItemNavController = (function() {
         tab.style.backgroundColor   = "rgba(200, 200, 200, 0.7)";
         tab.style.fontSize          = "2em";
         tab.innerHTML               = "&#9776;";
+        SelectionPopup.setPos(SelectionPopup.pos, 0);
     }
 
     return {

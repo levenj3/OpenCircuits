@@ -1,4 +1,7 @@
+// Requirements
+var Images   = require("../../../libraries/Images");
 var Gate = require("../Gate");
+// 
 
 class BUFGate extends Gate {
     constructor(context, not, x, y) {
@@ -21,9 +24,3 @@ class BUFGate extends Gate {
 BUFGate.getXMLName = function() { return "bufgate"; }
 
 module.exports = BUFGate;
-
-// Requirements
-var Images   = require("../../../libraries/Images");
-
-// 
-

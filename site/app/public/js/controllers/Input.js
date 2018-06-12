@@ -237,5 +237,5 @@ var PlaceItemController = require("./PlaceItemController");
 
 var getCurrentContext = require("../libraries/Context").getCurrentContext;
 var getCurrentTool    = require("./tools/Tool").getCurrent;
-var render            = require("../views/Renderer").render;
+var render            = require("../libraries/RenderUtils").render;
 //

@@ -1,6 +1,11 @@
+// Requirements
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
+var V    = require("../../../libraries/math/Vector").V;
 var Gate = require("../Gate");
+
+var Clamp = require("../../../libraries/math/MathUtils").Clamp;
+// 
 
 class Encoder extends Gate {
     constructor(context, x, y) {
@@ -58,11 +63,3 @@ class Encoder extends Gate {
 Encoder.getXMLName = function() { return "encoder"; }
 
 module.exports = Encoder;
-
-// Requirements
-var V        = require("../../../libraries/math/Vector").V;
-
-
-var Clamp = require("../../../libraries/math/MathUtils").Clamp;
-// 
-

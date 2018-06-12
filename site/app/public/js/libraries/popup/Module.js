@@ -1,12 +1,19 @@
+// Requirements
+var render = require("../RenderUtils").render;
+//
+
 class Module {
     constructor(parent, divName, divTextName) {
         this.parent = parent;
         this.div = document.getElementById(divName);
         this.divtext = (divTextName ? document.getElementById(divTextName) : undefined);
-        this.div.oninput = () => { render(); this.onChange(); };
-        this.div.onclick = () => this.onClick();
-        this.div.onfocus = () => this.onFocus();
-        this.div.onblur =  () => this.onBlur();
+        
+        if (this.div) {
+            this.div.oninput = () => { render(); this.onChange(); };
+            this.div.onclick = () => this.onClick();
+            this.div.onfocus = () => this.onFocus();
+            this.div.onblur =  () => this.onBlur();
+        }
     }
     blur() {
         this.div.blur();
@@ -40,7 +47,3 @@ class Module {
 }
 
 module.exports = Module;
-
-// Requirements
-var render = require("../../views/Renderer").render;
-//

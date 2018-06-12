@@ -1,4 +1,6 @@
+// Requirements
 var Action = require("./Action");
+//
 
 class GroupAction extends Action {
     constructor() {

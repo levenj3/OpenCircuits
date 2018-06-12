@@ -1,3 +1,11 @@
+// Requirements
+var V         = require("./math/Vector").V;
+var Matrix2x3 = require("./math/Matrix");
+var Transform = require("./math/Transform");
+
+var TransformContains = require("./math/MathUtils").TransformContains;
+// 
+
 class Camera {
     constructor(designer, startPos, startZoom) {
         this.canvas = designer.renderer.canvas;
@@ -63,11 +71,3 @@ class Camera {
 }
 
 module.exports = Camera;
-
-// Requirements
-var V         = require("./math/Vector").V;
-var Matrix2x3 = require("./math/Matrix");
-var Transform = require("./math/Transform");
-
-var TransformContains = require("./math/MathUtils").TransformContains;
-// 

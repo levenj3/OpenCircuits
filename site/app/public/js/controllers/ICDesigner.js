@@ -6,8 +6,10 @@ var ICDesigner = (function() {
     var confirmButton = document.getElementById("ic-confirmbutton");
     var cancelButton  = document.getElementById("ic-cancelbutton");
 
-    confirmButton.onclick = () => { ICDesigner.confirm(); };
-    cancelButton.onclick  = () => { ICDesigner.cancel(); };
+    if (confirmButton)
+        confirmButton.onclick = () => { ICDesigner.confirm(); };
+    if (cancelButton)
+        cancelButton.onclick  = () => { ICDesigner.cancel(); };
 
     var designer;
 
@@ -166,5 +168,5 @@ var GetNearestPointOnRect      = require("../libraries/math/MathUtils").GetNeare
 var setCurrentContext          = require("../libraries/Context").setCurrentContext;
 var getCurrentContext          = require("../libraries/Context").getCurrentContext;
 var getMainContext             = require("../libraries/Context").getMainContext;
-var render                     = require("../views/Renderer").render;
+var render                     = require("../libraries/RenderUtils").render;
 //

@@ -1,3 +1,8 @@
+// Requirements
+var Wire     = require("../models/Wire");
+var WirePort = require("../models/WirePort");
+// 
+
 function CopyGroup(objects) {
     if (objects.length === 0)
         return [];
@@ -27,6 +32,7 @@ function CopyGroup(objects) {
                 var wire = wires[k].copy();
                 copies[i].outputs[j].connect(wire);
                 var w = wires[k];
+                
                 // Iterate through all wires connected to other wires
                 while(w.connection instanceof WirePort) {
                     var port = new WirePort(obj.context);
@@ -69,8 +75,3 @@ function FindIPort(objects, target, copies) {
 
 module.exports.CopyGroup = CopyGroup;
 module.exports.FindIPort = FindIPort;
-
-// Requirements
-var Wire     = require("../models/Wire");
-var WirePort = require("../models/WirePort");
-// 

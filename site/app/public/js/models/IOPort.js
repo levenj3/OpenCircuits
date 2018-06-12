@@ -1,9 +1,20 @@
+// Requirements
 var DEFAULT_BORDER_COLOR = require("../libraries/Constants").DEFAULT_BORDER_COLOR;
 var DEFAULT_FILL_COLOR   = require("../libraries/Constants").DEFAULT_FILL_COLOR;
 var IO_PORT_BORDER_WIDTH = require("../libraries/Constants").IO_PORT_BORDER_WIDTH;
 var IO_PORT_LINE_WIDTH   = require("../libraries/Constants").IO_PORT_LINE_WIDTH;
 var IO_PORT_RADIUS       = require("../libraries/Constants").IO_PORT_RADIUS;
 var IO_PORT_LENGTH       = require("../libraries/Constants").IO_PORT_LENGTH;
+
+var V         = require("../libraries/math/Vector").V;
+var Transform = require("../libraries/math/Transform");
+
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
+var CircleContains    = require("../libraries/math/MathUtils").CircleContains;
+var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
+var createChildNode   = require("../libraries/ExportUtils").createChildNode;
+var createTextElement = require("../libraries/ExportUtils").createTextElement;
+// 
 
 class IOPort {
     constructor(parent, dir) {
@@ -163,14 +174,3 @@ class IOPort {
 }
 
 module.exports = IOPort;
-
-// Requirements
-var V         = require("../libraries/math/Vector").V;
-var Transform = require("../libraries/math/Transform");
-
-var RectContains      = require("../libraries/math/MathUtils").RectContains;
-var CircleContains    = require("../libraries/math/MathUtils").CircleContains;
-var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
-var createChildNode   = require("../controllers/Exporter").createChildNode;
-var createTextElement = require("../controllers/Exporter").createTextElement;
-// 

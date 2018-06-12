@@ -1,6 +1,9 @@
+// Requirements
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
+var Images   = require("../../../libraries/Images");
 var IOObject = require("../../IOObject");
+// 
 
 class ConstantHigh extends IOObject {
     constructor(context, x, y) {
@@ -14,9 +17,3 @@ class ConstantHigh extends IOObject {
 ConstantHigh.getXMLName = function() { return "consthigh"; }
 
 module.exports = ConstantHigh;
-
-// Requirements
-var Images   = require("../../../libraries/Images");
-
-// 
-

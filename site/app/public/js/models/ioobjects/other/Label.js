@@ -1,4 +1,9 @@
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
 var IOObject = require("../../IOObject");
+
+var render = require("../../../libraries/RenderUtils").render;
+// 
 
 class Label extends IOObject {
     constructor(context, x, y) {
@@ -40,11 +45,3 @@ class Label extends IOObject {
 Label.getXMLName = function() { return "label"; }
 
 module.exports = Label;
-
-// Requirements
-var V        = require("../../../libraries/math/Vector").V;
-
-
-var render = require("../../../views/Renderer").render;
-// 
-

@@ -97,5 +97,5 @@ var Wire            = require("../../models/Wire");
 var OPort           = require("../../models/OPort");
 
 var getCurrentContext = require("../../libraries/Context").getCurrentContext;
-var render            = require("../../views/Renderer").render;
+var render            = require("../../libraries/RenderUtils").render;
 // 

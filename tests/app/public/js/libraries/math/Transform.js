@@ -1,3 +1,7 @@
+var Vector = require("/site/app/public/js/libraries/math/Vector");
+var Transform = require("/site/app/public/js/libraries/math/Transform");
+var Camera = require("/site/app/public/js/libraries/Camera");
+
 describe("Transform", () => {
     describe("Constructor", () => {
         it("No parameters", () => {

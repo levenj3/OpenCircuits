@@ -1,4 +1,8 @@
+// Requirements
 var Module = require("../../libraries/popup/Module");
+
+var getCurrentContext = require("../../libraries/Context").getCurrentContext;
+//
 
 class UndoModule extends Module {
     constructor(parent, divName) {

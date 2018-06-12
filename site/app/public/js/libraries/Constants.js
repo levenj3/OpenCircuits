@@ -45,6 +45,11 @@ var Z_KEY = 90;
 var CONTROL_KEY = 17;
 var COMMAND_KEY = 91;
 
+
+
+
+
+
 module.exports.DEFAULT_SIZE = DEFAULT_SIZE;
 module.exports.GRID_SIZE = GRID_SIZE;
 module.exports.DEFAULT_FILL_COLOR = DEFAULT_FILL_COLOR;

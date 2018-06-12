@@ -1,4 +1,8 @@
+// Requirements
 var ITEMNAV_WIDTH = require("../Constants").ITEMNAV_WIDTH;
+
+var V = require("../math/Vector").V;
+//
 
 class Popup {
     constructor(divName) {
@@ -42,22 +46,17 @@ class Popup {
         this.div.style.visibility = "hidden";
         this.div.blur();
     }
-    setPos(v) {
+    setPos(v, w) {
         this.pos = V(v.x, v.y);
-        this.clamp();
+        this.clamp(w ? w : 0);
 
         this.div.style.left = this.pos.x + "px";
         this.div.style.top = this.pos.y + "px";
     }
-    clamp() {
-        this.pos.x = Math.max(Math.min(this.pos.x, window.innerWidth -this.div.clientWidth -1), ItemNavController.isOpen ? ITEMNAV_WIDTH+5 : 5);
+    clamp(w) {
+        this.pos.x = Math.max(Math.min(this.pos.x, window.innerWidth -this.div.clientWidth -1), w + 5);
         this.pos.y = Math.max(Math.min(this.pos.y, window.innerHeight-this.div.clientHeight-1), (header ? header.clientHeight : 0)+5);
     }
 }
 
 module.exports = Popup;
-
-// Requirements
-var V                 = require("../math/Vector").V;
-var ItemNavController = require("../../controllers/ItemNavController");
-// 

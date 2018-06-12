@@ -1,4 +1,7 @@
+// Requirements
+var V      = require("../libraries/math/Vector").V;
 var IOPort = require("./IOPort");
+// 
 
 class IPort extends IOPort {
     constructor(parent) {
@@ -36,7 +39,3 @@ class IPort extends IOPort {
 }
 
 module.exports = IPort;
-
-// Requirements
-var V = require("../libraries/math/Vector").V;
-// 

@@ -1,5 +1,23 @@
+// Requirements
 var DEFAULT_SIZE       = require("../libraries/Constants").DEFAULT_SIZE;
 var DEFAULT_FILL_COLOR = require("../libraries/Constants").DEFAULT_FILL_COLOR;
+
+var V           = require("../libraries/math/Vector").V;
+var Transform   = require("../libraries/math/Transform");
+var BezierCurve = require("../libraries/math/Bezier");
+var WirePort    = require("./WirePort");
+
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+
+var getChildNode    = require("../libraries/ImportUtils").getChildNode;
+var getIntValue     = require("../libraries/ImportUtils").getIntValue;
+var getStringValue  = require("../libraries/ImportUtils").getStringValue;
+var getFloatValue   = require("../libraries/ImportUtils").getFloatValue;
+var getBooleanValue = require("../libraries/ImportUtils").getBooleanValue;
+
+var createChildNode   = require("../libraries/ExportUtils").createChildNode;
+var createTextElement = require("../libraries/ExportUtils").createTextElement;
+// 
 
 class Wire {
     constructor(context) {
@@ -235,19 +253,3 @@ function FindByUID(objects, id) {
 }
 
 module.exports = Wire;
-
-// Requirements
-var V           = require("../libraries/math/Vector").V;
-var Transform   = require("../libraries/math/Transform");
-var BezierCurve = require("../libraries/math/Bezier");
-var WirePort    = require("./WirePort");
-
-var getChildNode    = require("../libraries/ImportUtils").getChildNode;
-var getIntValue     = require("../libraries/ImportUtils").getIntValue;
-var getStringValue  = require("../libraries/ImportUtils").getStringValue;
-var getFloatValue   = require("../libraries/ImportUtils").getFloatValue;
-var getBooleanValue = require("../libraries/ImportUtils").getBooleanValue;
-
-var createChildNode   = require("../controllers/Exporter").createChildNode;
-var createTextElement = require("../controllers/Exporter").createTextElement;
-// 

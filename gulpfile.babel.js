@@ -1,43 +1,73 @@
 var gulp = require('gulp');
-var uglify = require('gulp-uglify-es').default; 
+var babel = require('gulp-babel');
+var minify = require('gulp-babel-minify'); 
+var browserify = require('gulp-browserify');
+
 var concat = require('gulp-concat');
 var gap = require('gulp-append-prepend');
-var browserify = require('gulp-browserify');
-// var mocha = require('gulp-mocha');
 
-var dest = "site/app/public/js/combined.js";
-var dest_min = "site/app/public/js/combined-min.js";
+var mocha = require('gulp-mocha');
 
-var dst = "site/app/public/js/Bundle.js";
-var src = "site/app/public/js/views/Main.js";
+var rename = require('gulp-rename');
+var clean = require('gulp-clean');
 
+var argv = require('yargs').argv;
+
+
+var src = "site/app/public/js/views/Main.js"
+var dst = "site/app/public/js";
+
+// JS file locations
 var lib = ["libraries/**/*"];
 var controller = ["controllers/**/*"];
 var model = ["models/*", "models/ioobjects/**/*"];
 var view = ["views/*"];
-
 var files = lib.concat(controller, model, view);
-var paths = files.map(function(file) { return "site/app/public/js/" + file + ".js"; });
-var test_paths = files.map(function(file) { return "tests/app/public/js/" + file + ".js"; });
 
-function build() {    
-    gulp.src(src)
+
+var isReleaseBuild = (argv.release === undefined ? false : true);
+var buildTests     = (argv.tests === undefined ? false : true);
+
+function devBuild() {    
+    return gulp.src(src)
         .pipe(browserify())
-        .pipe(uglify())
-        .pipe(concat(dst))
+        .pipe(rename('combined.js'))
+        .pipe(gulp.dest(dst));
+}
+
+function releaseBuild() {
+    return gulp.src(src)
+        .pipe(browserify({
+            paths: ['./node_modules','./site/app/public/js/']
+        }))
+        .pipe(babel({presets: ['es2015']}))
+        .pipe(minify())
+        .pipe(rename('combined-min.js'))
         .pipe(gulp.dest("."));
-      
-    gulp.src(paths.concat(test_paths))
-      .pipe(concat("tests/index.js"))
-      .pipe(gap.appendText("start();"))
-      .pipe(gulp.dest("."));
+}
+
+function testsBuild() {
+    var test_paths = "tests/app/public/js/**/*.test.js";
+    
+    return gulp.src(test_paths)
+        .pipe(browserify())
+        .pipe(gap.prependText("var jsdom = require('jsdom'); \
+                        var { JSDOM } = jsdom; \
+                        var window = (new JSDOM(``, { pretendToBeVisual: true })).window; \
+                        var document = (window.document);"))
+        .pipe(gulp.dest("./tests/bin/public/js"));
 }
 
 function test() {
-    return gulp.src("tests/index.js")
-    .pipe(mocha());
+    var test_paths = "tests/bin/public/js/**/*.test.js";
+    
+    return gulp.src(test_paths)
+        .pipe(mocha());
+        // .pipe(mocha());
 }
 
-
-gulp.task('build', build);
+if (buildTests)
+    gulp.task('build', testsBuild);    
+else
+    gulp.task('build', (isReleaseBuild ? releaseBuild : devBuild));    
 gulp.task('test', test);

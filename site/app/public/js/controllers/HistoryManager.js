@@ -1,5 +1,15 @@
-var Y_KEY = require("./Constants").Y_KEY;
-var Z_KEY = require("./Constants").Z_KEY;
+// Requirements
+var Y_KEY = require("../libraries/Constants").Y_KEY;
+var Z_KEY = require("../libraries/Constants").Z_KEY;
+
+var Input          = require("./Input");
+var SelectionTool = require("./tools/SelectionTool");
+var SelectionPopup = require("./selectionpopup/SelectionPopup");
+var SelectAction   = require("../libraries/actions/SelectAction");
+var GroupAction    = require("../libraries/actions/GroupAction");
+
+var render = require("../libraries/RenderUtils").render;
+// 
 
 class HistoryManager {
     constructor() {
@@ -49,6 +59,7 @@ class HistoryManager {
             this.redoStack.push(action);
             // Update popup's values
             SelectionPopup.update();
+            SelectionTool.recalculateMidpoint();
             render();
         }
     }
@@ -59,18 +70,10 @@ class HistoryManager {
             this.undoStack.push(action);
             // Update popup's values
             SelectionPopup.update();
+            SelectionTool.recalculateMidpoint();
             render();
         }
     }
 }
 
 module.exports = HistoryManager;
-
-// Requirements
-var Input          = require("../controllers/Input");
-var SelectionPopup = require("../controllers/selectionpopup/SelectionPopup");
-var SelectAction   = require("./actions/SelectAction");
-var GroupAction    = require("./actions/GroupAction");
-
-var render = require("../views/Renderer").render;
-// 

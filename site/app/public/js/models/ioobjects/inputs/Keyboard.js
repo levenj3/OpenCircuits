@@ -1,6 +1,10 @@
+// Requirements
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
+var V        = require("../../../libraries/math/Vector").V;
+var Images   = require("../../../libraries/Images");
 var IOObject = require("../../IOObject");
+//
 
 class Keyboard extends IOObject {
     constructor(context, x, y) {
@@ -106,10 +110,4 @@ Keyboard.addKey(112); // F1
 Keyboard.addKey(112); // F2
 
 module.exports = Keyboard;
-
-// Requirements
-var V        = require("../../../libraries/math/Vector").V;
-var Images   = require("../../../libraries/Images");
-
-// 
 

@@ -54,7 +54,7 @@ class BusButtonModule extends Module {
                 }
             }
             var wire = new Wire(context);
-            getCurrentContext().add(wire);
+            getCurrentContext().addWire(wire);
             oports[maxDistIndex].connect(wire);
             wire.connect(iports[maxMinDistIndex]);
             wire.set = true;
@@ -74,5 +74,5 @@ var IPort         = require("../../models/IPort");
 var OPort         = require("../../models/OPort");
 var Wire          = require("../../models/Wire");
 
-var render = require("../../views/Renderer").render;
+var render = require("../../libraries/RenderUtils").render;
 // 

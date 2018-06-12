@@ -19,7 +19,9 @@
 
 var Importer = (function() {   
     var fileInput = document.getElementById('file-input');
-    fileInput.onchange = () => { Importer.openFile(); };
+    
+    if (fileInput)
+        fileInput.onchange = () => { Importer.openFile(); };
      
     return {
         types: [],
@@ -136,5 +138,5 @@ var getBooleanValue      = require("../libraries/ImportUtils").getBooleanValue;
 var getIntValue          = require("../libraries/ImportUtils").getIntValue;
 var getFloatValue        = require("../libraries/ImportUtils").getFloatValue;
 var getStringValue       = require("../libraries/ImportUtils").getStringValue;
-var render               = require("../views/Renderer").render;
+var render               = require("../libraries/RenderUtils").render;
 //

@@ -1,10 +1,17 @@
-// Okay, I know this is awful but it's like 5:47 am and I'm tired
+// Requirements
+var IOObject = require("../models/IOObject");
+var Wire     = require("../models/Wire");
+var WirePort = require("../models/WirePort");
+var IPort    = require("../models/IPort");
+var OPort    = require("../models/OPort");
+var Switch   = require("../models/ioobjects/inputs/Switch");
+var Button   = require("../models/ioobjects/inputs/Button");
+var Clock    = require("../models/ioobjects/inputs/Clock");
+var LED      = require("../models/ioobjects/outputs/LED");
+// 
 
-/**
- * [GetAllThingsBetween description]
- * @param       {[type]} things [description]
- * @constructor
- */
+
+// Okay, I know this is awful but it's like 5:47 am and I'm tired
 function GetAllThingsBetween(things) {
     var objects = [];
     var wiresAndPorts = [];
@@ -129,15 +136,3 @@ module.exports.GetAllThingsBetween = GetAllThingsBetween;
 module.exports.GetAllWires = GetAllWires;
 module.exports.FindIC = FindIC;
 module.exports.SeparateGroup = SeparateGroup;
-
-// Requirements
-var IOObject = require("../models/IOObject");
-var Wire     = require("../models/Wire");
-var WirePort = require("../models/WirePort");
-var IPort    = require("../models/IPort");
-var OPort    = require("../models/OPort");
-var Switch   = require("../models/ioobjects/inputs/Switch");
-var Button   = require("../models/ioobjects/inputs/Button");
-var Clock    = require("../models/ioobjects/inputs/Clock");
-var LED      = require("../models/ioobjects/outputs/LED");
-// 

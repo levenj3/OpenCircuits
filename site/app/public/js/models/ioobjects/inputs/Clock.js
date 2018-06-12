@@ -1,4 +1,7 @@
+// Requirements
+var Images   = require("../../../libraries/Images");
 var IOObject = require("../../IOObject");
+// 
 
 class Clock extends IOObject {
     constructor(context, x, y) {
@@ -22,9 +25,3 @@ class Clock extends IOObject {
 Clock.getXMLName = function() { return "clock"; }
 
 module.exports = Clock;
-
-// Requirements
-var Images   = require("../../../libraries/Images");
-
-// 
-

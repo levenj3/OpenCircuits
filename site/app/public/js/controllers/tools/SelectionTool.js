@@ -171,9 +171,12 @@ var SelectionTool = (function() {
             this.deselect(objects, doAction);
         },
         sendToFront: function(obj) {
-            if (obj instanceof IOObject || obj instanceof Wire) {
+            if (obj instanceof IOObject) {
                 getCurrentContext().remove(obj);
-                getCurrentContext().add(obj);
+                getCurrentContext().addObject(obj);
+            } else if (obj instanceof Wire) {
+                getCurrentContext().remove(obj);
+                getCurrentContext().addWire(obj);
             }
         },
         recalculateMidpoint: function() {

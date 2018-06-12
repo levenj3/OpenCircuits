@@ -1,4 +1,6 @@
+// Requirements
 var Action = require("./Action");
+//
 
 class SplitWireAction extends Action {
     constructor(wire) {

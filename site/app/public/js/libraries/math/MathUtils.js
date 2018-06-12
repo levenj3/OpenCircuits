@@ -1,6 +1,8 @@
+// Requirements
 var WIRE_DIST_THRESHOLD2 = require("../Constants").WIRE_DIST_THRESHOLD2;
 
 var V = require("./Vector").V;
+//
 
 /**
  * Determines whether the given point is
@@ -24,10 +26,10 @@ function RectContains(transform, pos) {
     var bl = transform.size.scale(-0.5);
     var p  = transform.toLocalSpace(pos);
 
-    return (p.x > bl.x &&
-            p.y > bl.y &&
-            p.x < tr.x &&
-            p.y < tr.y);
+    return (p.x >= bl.x &&
+            p.y >= bl.y &&
+            p.x <= tr.x &&
+            p.y <= tr.y);
 }
 
 /**
@@ -188,25 +190,6 @@ function GetNearestPointOnRect(bl, tr, pos) {
 }
 
 /**
- * Clamps a number between a given min and max
- *
- * @param  {Number} x
- *         The number to Clamp
- *
- * @param  {Number} min
- *         The minimum
- *
- * @param  {Number} max
- *         The maximum
- *
- * @return {Number}
- *         The Clamped number
- */
-function Clamp(x, min, max) {
-    return Math.min(Math.max(x, min), max);
-}
-
-/**
  * Uses Newton's method to find the roots of
  * the function 'f' given a derivative 'df'
  *
@@ -292,10 +275,30 @@ function GetNearestT(p1, p2, mx, my) {
         return -1;
 }
 
+/**
+ * Clamps a number between a given min and max
+ *
+ * @param  {Number} x
+ *         The number to Clamp
+ *
+ * @param  {Number} min
+ *         The minimum
+ *
+ * @param  {Number} max
+ *         The maximum
+ *
+ * @return {Number}
+ *         The Clamped number
+ */
+function Clamp(x, min, max) {
+    return Math.min(Math.max(x, min), max);
+}
+
 
 module.exports.CircleContains = CircleContains;
 module.exports.RectContains = RectContains;
 module.exports.TransformContains = TransformContains;
 module.exports.GetNearestPointOnRect = GetNearestPointOnRect;
-module.exports.Clamp = Clamp;
 module.exports.FindRoots = FindRoots;
+module.exports.GetNearestT = GetNearestT;
+module.exports.Clamp = Clamp;

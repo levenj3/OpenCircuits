@@ -1,3 +1,8 @@
+// Requirements
+var getCurrentContext = require("../Context").getCurrentContext;
+var setSaved          = require("../Context").setSaved;
+// 
+
 class Action {
     constructor() {
         this.context = getCurrentContext();
@@ -11,8 +16,3 @@ class Action {
 }
 
 module.exports = Action;
-
-// Requirements
-var getCurrentContext = require("../Context").getCurrentContext;
-var setSaved          = require("../Context").setSaved;
-// 

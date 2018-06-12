@@ -1,4 +1,6 @@
+// Requirements
 var Module = require("../../libraries/popup/Module");
+//
 
 class PasteModule extends Module {
     constructor(parent, divName) {

@@ -1,4 +1,8 @@
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
+var Images   = require("../../../libraries/Images");
 var Gate = require("../Gate");
+//
 
 class ORGate extends Gate {
     constructor(context, not, x, y) {
@@ -59,10 +63,3 @@ class ORGate extends Gate {
 ORGate.getXMLName = function() { return "orgate"; }
 
 module.exports = ORGate;
-
-// Requirements
-var V        = require("../../../libraries/math/Vector").V;
-var Images   = require("../../../libraries/Images");
-
-// 
-

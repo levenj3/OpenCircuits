@@ -1,5 +1,7 @@
-var Module        = require("../../libraries/popup/Module");
+// Requirements
+var Module = require("../../libraries/popup/Module");
 var SelectionTool = require("../tools/SelectionTool");
+//
 
 class CutModule extends Module {
     constructor(parent, divName) {

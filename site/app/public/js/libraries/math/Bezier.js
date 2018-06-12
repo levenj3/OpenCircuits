@@ -1,6 +1,18 @@
+// Requirements
 var WIRE_DIST_ITERATIONS   = require("../Constants").WIRE_DIST_ITERATIONS;
 var WIRE_NEWTON_ITERATIONS = require("../Constants").WIRE_NEWTON_ITERATIONS;
 var WIRE_DIST_THRESHOLD2   = require("../Constants").WIRE_DIST_THRESHOLD2;
+
+var V         = require("./Vector").V;
+var Transform = require("./Transform");
+
+var Clamp             = require("./MathUtils").Clamp;
+var FindRoots         = require("./MathUtils").FindRoots;
+var getChildNode      = require("../ImportUtils").getChildNode;
+var getFloatValue     = require("../ImportUtils").getFloatValue;
+var createChildNode   = require("../ExportUtils").createChildNode;
+var createTextElement = require("../ExportUtils").createTextElement;
+// 
 
 class BezierCurve {
     constructor(p1, p2, c1, c2) {
@@ -9,7 +21,7 @@ class BezierCurve {
         this.c1 = V(c1.x,c1.y);
         this.c2 = V(c2.x,c2.y);
         this.dirty = true;
-        this.boundingBox = new Transform(0,0,0,getCurrentContext().getCamera());
+        this.boundingBox = new Transform(0,0,0);
     }
     update(p1, p2, c1, c2) {
         this.p1.x = p1.x;
@@ -177,16 +189,3 @@ class BezierCurve {
 }
 
 module.exports = BezierCurve;
-
-// Requirements
-var V                 = require("./Vector").V;
-var Transform         = require("./Transform");
-
-var Clamp             = require("./MathUtils").Clamp;
-var FindRoots         = require("./MathUtils").FindRoots;
-var getCurrentContext = require("../Context").getCurrentContext;
-var getChildNode      = require("../ImportUtils").getChildNode;
-var getFloatValue     = require("../ImportUtils").getFloatValue;
-var createChildNode   = require("../../controllers/Exporter").createChildNode;
-var createTextElement = require("../../controllers/Exporter").createTextElement;
-// 

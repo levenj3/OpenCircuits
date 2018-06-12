@@ -13,4 +13,5 @@ Images.load = function(names, index, onFinish) {
     };
     img.src = "img/items/" + names[index];
 };
+
 module.exports = Images;

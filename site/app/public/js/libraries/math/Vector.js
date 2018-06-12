@@ -1,4 +1,3 @@
-
 // Utility method for a new Vector
 function V(x, y) {
     return new Vector(x, y);

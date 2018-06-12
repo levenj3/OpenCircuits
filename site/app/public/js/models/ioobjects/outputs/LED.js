@@ -1,6 +1,15 @@
+// Requirements
 var DEFAULT_SIZE   = require("../../../libraries/Constants").DEFAULT_SIZE;
 
+var V        = require("../../../libraries/math/Vector").V;
+var Images   = require("../../../libraries/Images");
 var IOObject = require("../../IOObject");
+
+var getStringValue = require("../../../libraries/ImportUtils").getStringValue;
+var getChildNode   = require("../../../libraries/ImportUtils").getChildNode;
+
+var createTextElement = require("../../../controllers/Exporter").createTextElement;
+// 
 
 class LED extends IOObject {
     constructor(context, x, y, color) {
@@ -63,15 +72,3 @@ class LED extends IOObject {
 LED.getXMLName = function() { return "led"; }
 
 module.exports = LED;
-
-// Requirements
-var V        = require("../../../libraries/math/Vector").V;
-var Images   = require("../../../libraries/Images");
-
-
-var getStringValue = require("../../../libraries/ImportUtils").getStringValue;
-var getChildNode   = require("../../../libraries/ImportUtils").getChildNode;
-
-var createTextElement = require("../../../controllers/Exporter").createTextElement;
-// 
-

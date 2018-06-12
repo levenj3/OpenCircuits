@@ -1,4 +1,7 @@
-var Action = require("./Action");
+// Requirements
+var Action         = require("./Action");
+var GroupAction    = require("./GroupAction");
+//
 
 class TransformAction extends Action {
     constructor(obj, t0, t1) {
@@ -15,18 +18,6 @@ class TransformAction extends Action {
         this.obj.setTransform(this.t1);
         this.updatePopup();
     }
-    updatePopup() {
-        if (this.obj.selected) {
-            SelectionTool.recalculateMidpoint();
-            SelectionPopup.onMove();
-        }
-    }
 }
 
 module.exports = TransformAction;
-
-// Requirements
-var GroupAction    = require("./GroupAction");
-var SelectionTool  = require("../../controllers/tools/SelectionTool");
-var SelectionPopup = require("../../controllers/selectionpopup/SelectionPopup");
-// 

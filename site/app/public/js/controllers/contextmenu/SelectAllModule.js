@@ -1,7 +1,9 @@
+// Requirements
 var Module        = require("../../libraries/popup/Module");
 var SelectionTool = require("../tools/SelectionTool");
 
-var render = require("../../views/Renderer").render;
+var render = require("../../libraries/RenderUtils").render;
+//
 
 class SelectAllModule extends Module {
     constructor(parent, divName) {

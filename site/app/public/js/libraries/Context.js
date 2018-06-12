@@ -1,3 +1,9 @@
+// Requirements
+var UIDManager = require("./UIDManager");
+
+var CopyArray = require("./Utils").CopyArray;
+// 
+
 class Context {
     constructor(designer) {
         this.uidmanager = new UIDManager(this);
@@ -12,12 +18,12 @@ class Context {
     propogate(sender, receiver, signal) {
         this.designer.propogate(sender, receiver, signal);
     }
-    add(o) {
-        if (o instanceof Wire)
-            this.addWire(o);
-        else
-            this.addObject(o);
-    }
+    // add(o) {
+    //     if (o instanceof Wire)
+    //         this.addWire(o);
+    //     else
+    //         this.addObject(o);
+    // }
     addObject(o) {
         this.designer.addObject(o);
         this.uidmanager.giveUIDTo(o);
@@ -41,13 +47,15 @@ class Context {
         this.designer.renderer.setCursor(cursor);
     }
     remove(o) {
-        var index = this.getIndexOf(o);
-        if (index === -1)
-            return;
-        if (o instanceof Wire)
-            this.designer.getWires().splice(index, 1);
-        else
-            this.designer.getObjects().splice(index, 1);
+        var i = this.designer.getIndexOfWire(o);
+        if (i === -1) {
+            i = this.designer.getIndexOfObject(o);
+            if (i === -1)
+                return;
+            this.designer.getObjects().splice(i, 1);
+        } else {
+            this.designer.getWires().splice(i, 1);
+        }
     }
     undo() {
         this.designer.history.undo();
@@ -83,10 +91,11 @@ class Context {
         return CopyArray(this.designer.wires);
     }
     getIndexOf(o) {
-        if (o instanceof Wire)
-            return this.designer.getIndexOfWire(o);
-        else
-            return this.designer.getIndexOfObject(o);
+        var w = this.designer.getIndexOfWire(o);
+        if (w != null)
+            return w;
+            
+        return this.designer.getIndexOfObject(o);
     }
     findByUID(uid) {
         return FindObjectByUID(uid) || FindWireByUID(uid);
@@ -133,10 +142,3 @@ module.exports.getMainContext = getMainContext;
 module.exports.setSaved = setSaved;
 module.exports.isSaved = isSaved;
 module.exports.reset = reset;
-
-// Requirements
-var UIDManager = require("./UIDManager");
-var Wire       = require("../models/Wire");
-
-var CopyArray       = require("./Utils").CopyArray;
-// 

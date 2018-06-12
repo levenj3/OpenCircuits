@@ -1,4 +1,7 @@
-var Action = require("./Action");
+// Requirements
+var Action        = require("./Action");
+var SelectionTool = require("../../controllers/tools/SelectionTool");
+//
 
 class SelectAction extends Action {
     constructor(obj, flip) {
@@ -27,7 +30,3 @@ class SelectAction extends Action {
 }
 
 module.exports = SelectAction;
-
-// Requirements
-var SelectionTool = require("../../controllers/tools/SelectionTool");
-// 

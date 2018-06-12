@@ -1,4 +1,6 @@
+// Requirements
 var Action = require("./Action");
+//
 
 class DeleteAction extends Action {
     constructor(obj, oldinput, oldconnection) {

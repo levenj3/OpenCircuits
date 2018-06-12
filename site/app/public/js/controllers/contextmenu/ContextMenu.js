@@ -1,3 +1,5 @@
+// Requirements
+var V               = require("../../libraries/math/Vector").V;
 var Popup           = require("../../libraries/popup/Popup");
 var CutModule       = require("./CutModule");
 var CopyModule      = require("./CopyModule");
@@ -5,6 +7,7 @@ var PasteModule     = require("./PasteModule");
 var SelectAllModule = require("./SelectAllModule");
 var UndoModule      = require("./UndoModule");
 var RedoModule      = require("./RedoModule");
+//
 
 class ContextMenu extends Popup {
     constructor() {

@@ -1,6 +1,18 @@
+// Requirements
+var SelectionTool = require("./tools/SelectionTool");
+var Importer      = require("./Importer");
+var Exporter      = require("./Exporter");
+var PlaceAction   = require("../libraries/actions/PlaceAction");
+var GroupAction   = require("../libraries/actions/GroupAction");
+
+var GetAllThingsBetween = require("../libraries/Utils").GetAllThingsBetween;
+var getCurrentContext   = require("../libraries/Context").getCurrentContext;
+var render              = require("../libraries/RenderUtils").render;
+// 
+
 var Clipboard = (function() {
-    document.addEventListener('copy',  e => {this.copy(e)}, false);
-    document.addEventListener('cut',   e => {this.cut(e)}, false);
+    document.addEventListener('copy',  e => {this.copy(e)},  false);
+    document.addEventListener('cut',   e => {this.cut(e)},   false);
     document.addEventListener('paste', e => {this.paste(e)}, false);
     
     return {
@@ -50,15 +62,3 @@ var Clipboard = (function() {
 })();
 
 module.exports = Clipboard;
-
-// Requirements
-var SelectionTool = require("../controllers/tools/SelectionTool");
-var Importer      = require("../controllers/Importer");
-var Exporter      = require("../controllers/Exporter");
-var PlaceAction   = require("./actions/PlaceAction");
-var GroupAction   = require("./actions/GroupAction");
-
-var GetAllThingsBetween = require("./Utils").GetAllThingsBetween;
-var getCurrentContext   = require("./Context").getCurrentContext;
-var render              = require("../views/Renderer").render;
-// 

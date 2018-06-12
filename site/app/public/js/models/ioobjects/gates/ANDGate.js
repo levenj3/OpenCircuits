@@ -1,4 +1,8 @@
+// Requirements
+var V        = require("../../../libraries/math/Vector").V;
 var Gate = require("../Gate");
+var Images   = require("../../../libraries/Images");
+// 
 
 class ANDGate extends Gate {
     constructor(context, not, x, y) {
@@ -42,10 +46,4 @@ class ANDGate extends Gate {
 ANDGate.getXMLName = function() { return "andgate"; }
 
 module.exports = ANDGate;
-
-// Requirements
-var V        = require("../../../libraries/math/Vector").V;
-var Images   = require("../../../libraries/Images");
-
-// 
 

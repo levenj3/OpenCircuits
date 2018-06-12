@@ -1,7 +1,11 @@
-// key board input inputs
+// Requirements
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
+var Images   = require("../../../libraries/Images");
 var IOObject = require("../../IOObject");
+
+var CircleContains = require("../../../libraries/math/MathUtils").CircleContains;
+//
 
 class Button extends IOObject {
     constructor(context, x, y) {
@@ -25,11 +29,3 @@ class Button extends IOObject {
 Button.getXMLName = function() { return "button"; }
 
 module.exports = Button;
-
-// Requirements
-var Images   = require("../../../libraries/Images");
-
-
-var CircleContains = require("../../../libraries/math/MathUtils").CircleContains;
-// 
-

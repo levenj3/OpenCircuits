@@ -1,6 +1,9 @@
+// Requirements
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
+var V    = require("../../../libraries/math/Vector").V;
 var Gate = require("../Gate");
+// 
 
 class SRFlipFlop extends Gate {
     constructor(context, x, y) {
@@ -48,9 +51,3 @@ class SRFlipFlop extends Gate {
 SRFlipFlop.getXMLName = function() { return "srff"; }
 
 module.exports = SRFlipFlop;
-
-// Requirements
-var V        = require("../../../libraries/math/Vector").V;
-
-// 
-

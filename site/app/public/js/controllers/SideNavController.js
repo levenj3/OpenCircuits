@@ -13,7 +13,8 @@ var SideNavController = (function() {
         }, false);
         overlay.onclick = () => { SideNavController.toggle() };
     }
-    tab.onclick = () => { SideNavController.toggle() };
+    if (tab)
+        tab.onclick = () => { SideNavController.toggle() };
     
     var open = function() {
         container.style.width           = SIDENAV_WIDTH + "px";

@@ -1,3 +1,6 @@
+var Vector = require("/site/app/public/js/libraries/math/Vector");
+var Vector = require("/site/app/public/js/libraries/math/Matrix");
+
 describe("Matrix2x3", () => {
     describe("Constructor", () => {
         it("No parameters", () => {

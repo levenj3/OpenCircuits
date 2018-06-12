@@ -1,4 +1,4 @@
-var Utils           = require("../libraries/Utils")
+var Utils               = require("../libraries/Utils")
 var Images              = require("../libraries/Images");
 var Context             = require("../libraries/Context");
 var ICDesigner          = require("../controllers/ICDesigner");
@@ -9,10 +9,12 @@ var Input               = require("../controllers/Input");
 var TransformController = require("../controllers/TransformController");
 var WireController      = require("../controllers/WireController");
 var SelectionBox        = require("../controllers/SelectionBox");
+var ItemNavController   = require("../controllers/ItemNavController");
+var SideNavController   = require("../controllers/SideNavController");
 var IOObject            = require("../models/IOObject");
 var CircuitDesigner     = require("./CircuitDesigner");
 
-var render = require("./Renderer").render;
+var render = require("../libraries/RenderUtils").render;
 
 // var Popup;
 

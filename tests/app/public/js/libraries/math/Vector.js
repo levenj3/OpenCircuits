@@ -1,3 +1,5 @@
+var Vector = require("/site/app/public/js/libraries/math/Vector");
+
 describe("Vector", () => {
     describe("Constructor", () => {
         it("No parameters", () => {

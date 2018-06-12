@@ -1,4 +1,6 @@
+// Requirements
 var PROPAGATION_TIME = require("./Constants").PROPAGATION_TIME;
+//
 
 var updateRequests = 0;
 class Propagation {

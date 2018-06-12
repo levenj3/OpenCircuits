@@ -152,11 +152,11 @@ module.exports = CircuitDesigner;
 // Requirements
 var V              = require("../libraries/math/Vector").V;
 var Camera         = require("../libraries/Camera");
-var HistoryManager = require("../libraries/HistoryManager");
 var Propagation    = require("../libraries/Propagation");
 var Wire           = require("../models/Wire");
+var HistoryManager = require("../controllers/HistoryManager");
 var Renderer       = require("./Renderer");
 
-var render         = require("./Renderer").render;
+var render         = require("../libraries/RenderUtils").render;
 var getCurrentTool = require("../controllers/tools/Tool").getCurrent;
 // 

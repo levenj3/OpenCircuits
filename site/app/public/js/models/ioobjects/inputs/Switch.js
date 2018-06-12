@@ -1,6 +1,11 @@
+// Requirements
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
+var Images   = require("../../../libraries/Images");
 var IOObject = require("../../IOObject");
+
+var createTextElement = require("../../../libraries/ExportUtils").createTextElement;
+// 
 
 class Switch extends IOObject {
     constructor(context, x, y) {
@@ -26,11 +31,3 @@ class Switch extends IOObject {
 Switch.getXMLName = function() { return "switch"; }
 
 module.exports = Switch;
-
-// Requirements
-var Images   = require("../../../libraries/Images");
-
-
-var createTextElement = require("../../../controllers/Exporter").createTextElement;
-// 
-

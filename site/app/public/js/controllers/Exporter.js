@@ -1,10 +1,22 @@
+// Requirements
+var ICData      = require("../models/ioobjects/other/ICData");
+var ExportUtils = require("../libraries/ExportUtils");
+
+var GetAllWires       = require("../libraries/ObjectUtils").GetAllWires;
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+var getChildNode      = require("../libraries/ImportUtils").getChildNode;
+var createChildNode   = require("../libraries/ExportUtils").createChildNode;
+var createTextElement = require("../libraries/ExportUtils").createTextElement;
+//
+
 var Exporter = (function() {    
     var saveButton       = document.getElementById('save-button');
     var projectNameInput = document.getElementById("project-name");
-    saveButton.onclick = () => { Exporter.saveFile(); };
+    
+    if (saveButton)
+        saveButton.onclick = () => { Exporter.saveFile(); };
 
     return {
-        ROOT: undefined,
         saveFile: function() {
             var data = this.write(getCurrentContext());
             var projectName = projectNameInput.value;
@@ -31,9 +43,8 @@ var Exporter = (function() {
             }
         },
         write: function(context) {
-            var root = new window.DOMParser().parseFromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><project></project>", "text/xml");
-            this.ROOT = root;
-
+            var root = ExportUtils.generateRoot();
+            
             var objects = context.getObjects();
             var wires   = context.getWires();
 
@@ -48,7 +59,7 @@ var Exporter = (function() {
         },
         writeGroup: function(node, objects, wires) {
             var objectsNode = createChildNode(node, "objects");
-            var wiresNode = createChildNode(node, "wires");
+            var wiresNode   = createChildNode(node, "wires");
 
             for (var i = 0; i < objects.length; i++)
                 objects[i].writeTo(objectsNode);
@@ -60,8 +71,8 @@ var Exporter = (function() {
             for (var i = 0; i < ICData.ICs.length; i++) {
                 var ic = ICData.ICs[i];
                 var ICNode = createChildNode(node, "ic");
-                createTextElement(ICNode, "icuid", ic.icuid);
-                createTextElement(ICNode, "width", ic.transform.size.x);
+                createTextElement(ICNode, "icuid",  ic.icuid);
+                createTextElement(ICNode, "width",  ic.transform.size.x);
                 createTextElement(ICNode, "height", ic.transform.size.y);
 
                 var iportNode = createChildNode(ICNode, "iports");
@@ -81,25 +92,4 @@ var Exporter = (function() {
     };
 })();
 
-// UTILS
-function createChildNode(parent, tag) {
-    var child = Exporter.ROOT.createElement(tag);
-    parent.appendChild(child);
-    return child;
-}
-
-function createTextElement(node, tag, text) {
-    var a = Exporter.ROOT.createElement(tag);
-    var b = Exporter.ROOT.createTextNode(text);
-    a.appendChild(b);
-    node.appendChild(a);
-}
-
 module.exports = Exporter;
-module.exports.createChildNode = createChildNode;
-module.exports.createTextElement = createTextElement;
-
-// Requirements
-var ICData      = require("../models/ioobjects/other/ICData");
-var GetAllWires = require("../libraries/ObjectUtils").GetAllWires;
-// 

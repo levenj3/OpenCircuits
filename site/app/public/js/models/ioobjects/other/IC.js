@@ -1,6 +1,14 @@
+// Requirements
 var DEFAULT_SIZE = require("../../../libraries/Constants").DEFAULT_SIZE;
 
 var IOObject = require("../../IOObject");
+
+var Clamp             = require("../../../libraries/math/MathUtils").Clamp;
+var FindIC            = require("../../../libraries/ObjectUtils").FindIC;
+var getIntValue       = require("../../../libraries/ImportUtils").getIntValue;
+var getChildNode      = require("../../../libraries/ImportUtils").getChildNode;
+var createTextElement = require("../../../libraries/ExportUtils").createTextElement;
+//
 
 class IC extends IOObject {
     constructor(context, data, x, y) {
@@ -117,11 +125,3 @@ class IC extends IOObject {
 IC.getXMLName = function() { return "ic"; }
 
 module.exports = IC;
-
-// Requirements
-var Clamp             = require("../../../libraries/math/MathUtils").Clamp;
-var FindIC            = require("../../../libraries/ObjectUtils").FindIC;
-var getIntValue       = require("../../../libraries/ImportUtils").getIntValue;
-var getChildNode      = require("../../../libraries/ImportUtils").getChildNode;
-var createTextElement = require("../../../controllers/Exporter").createTextElement;
-// 

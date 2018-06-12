@@ -1,4 +1,24 @@
+// Requirements
 var IO_PORT_RADIUS = require("../libraries/Constants").IO_PORT_RADIUS;
+
+var V         = require("../libraries/math/Vector").V;
+var Transform = require("../libraries/math/Transform");
+var IPort     = require("./IPort");
+var OPort     = require("./OPort");
+
+var Clamp             = require("../libraries/math/MathUtils").Clamp;
+var RectContains      = require("../libraries/math/MathUtils").RectContains;
+var getCurrentContext = require("../libraries/Context").getCurrentContext;
+
+var getChildNode      = require("../libraries/ImportUtils").getChildNode;
+var getIntValue       = require("../libraries/ImportUtils").getIntValue;
+var getStringValue    = require("../libraries/ImportUtils").getStringValue;
+var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
+var getBooleanValue   = require("../libraries/ImportUtils").getBooleanValue;
+
+var createChildNode   = require("../libraries/ExportUtils").createChildNode;
+var createTextElement = require("../libraries/ExportUtils").createTextElement;
+//
 
 class IOObject {
     constructor(context, x, y, w, h, img, isPressable, maxInputs, maxOutputs, selectionBoxWidth, selectionBoxHeight) {
@@ -271,21 +291,3 @@ class IOObject {
     }
 }
 module.exports = IOObject;
-
-// Requirements (at end so that declaration exported is first)
-var V                 = require("../libraries/math/Vector").V;
-var Transform         = require("../libraries/math/Transform");
-var IPort             = require("./IPort");
-var OPort             = require("./OPort");
-
-var Clamp             = require("../libraries/math/MathUtils").Clamp;
-var RectContains      = require("../libraries/math/MathUtils").RectContains;
-var getCurrentContext = require("../libraries/Context").getCurrentContext;
-var getChildNode      = require("../libraries/ImportUtils").getChildNode;
-var getIntValue       = require("../libraries/ImportUtils").getIntValue;
-var getStringValue    = require("../libraries/ImportUtils").getStringValue;
-var getFloatValue     = require("../libraries/ImportUtils").getFloatValue;
-var getBooleanValue   = require("../libraries/ImportUtils").getBooleanValue;
-var createChildNode   = require("../controllers/Exporter").createChildNode;
-var createTextElement = require("../controllers/Exporter").createTextElement;
-//
